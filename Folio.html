@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Folio — PDF Reader &amp; Editor for Android. Fast, annotation-rich, and private.">
+<title>Folio — PDF Reader &amp; Editor for Android</title>
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  :root{--bg:#0F1117;--sf:#171A24;--bd:#272B3A;--tx:#E8EAF0;--tx2:#8A8FA8;--ac:#F5A623;--r:12px;}
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--tx);line-height:1.6;}
+  a{color:var(--ac);text-decoration:none;}
+  a:hover{text-decoration:underline;}
+  .container{max-width:680px;margin:0 auto;padding:0 24px;}
+
+  .hero{padding:80px 0 60px;text-align:center;}
+  .hero-icon{width:80px;height:80px;background:var(--ac);border-radius:20px;display:inline-flex;align-items:center;justify-content:center;margin-bottom:28px;}
+  .hero-icon svg{width:44px;height:44px;color:#111;}
+  .hero h1{font-size:clamp(32px,6vw,48px);font-weight:700;letter-spacing:-1px;margin-bottom:16px;}
+  .hero h1 span{color:var(--ac);}
+  .hero p{font-size:18px;color:var(--tx2);max-width:480px;margin:0 auto 36px;line-height:1.7;}
+  .hero-actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;}
+  .badge{display:inline-block;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:600;letter-spacing:.5px;background:rgba(245,166,35,.15);color:var(--ac);border:1px solid rgba(245,166,35,.3);margin-bottom:16px;}
+  .play-badge{display:inline-block;height:50px;}
+  .play-badge img{height:50px;display:block;}
+
+  .divider{border:none;border-top:1px solid var(--bd);margin:0;}
+
+  .features{padding:64px 0;}
+  .section-label{font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--ac);margin-bottom:12px;}
+  .section-title{font-size:28px;font-weight:700;letter-spacing:-.5px;margin-bottom:40px;}
+  .feature-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;}
+  .feature-card{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:22px;}
+  .feature-card h3{font-size:15px;font-weight:600;margin-bottom:6px;}
+  .feature-card p{font-size:14px;color:var(--tx2);line-height:1.6;}
+  .feature-icon{width:36px;height:36px;border-radius:9px;background:rgba(245,166,35,.12);display:flex;align-items:center;justify-content:center;margin-bottom:14px;}
+  .feature-icon svg{width:18px;height:18px;color:var(--ac);}
+
+  .privacy-strip{background:var(--sf);border-top:1px solid var(--bd);border-bottom:1px solid var(--bd);padding:32px 0;}
+  .privacy-inner{display:flex;align-items:center;gap:20px;flex-wrap:wrap;}
+  .privacy-badge{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--tx2);}
+  .privacy-badge svg{width:18px;height:18px;color:var(--ac);flex-shrink:0;}
+
+  footer{padding:40px 0;text-align:center;}
+  .footer-links{display:flex;gap:24px;justify-content:center;flex-wrap:wrap;margin-bottom:16px;}
+  .footer-links a{font-size:14px;color:var(--tx2);}
+  .footer-links a:hover{color:var(--ac);}
+  .copyright{font-size:13px;color:var(--bd);}
+
+  @media(max-width:480px){
+    .hero{padding:60px 0 40px;}
+    .feature-grid{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="hero">
+    <div class="hero-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>
+    </div>
+    <div class="badge">Available on Android</div>
+    <h1>Foli<span>o</span></h1>
+    <p>A fast PDF reader and annotation tool. Highlights, notes, signatures, and full-text search — open documents from anywhere, annotate them privately.</p>
+    <div class="hero-actions">
+      <!--
+        Replace href="#" with your Play Store URL once the listing is live.
+        The badge image is Google's official asset — do not replace it with a custom graphic.
+      -->
+      <a href="#" class="play-badge">
+        <img src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png" alt="Get it on Google Play" height="50">
+      </a>
+    </div>
+  </div>
+</div>
+
+<hr class="divider">
+
+<div class="container">
+  <div class="features">
+    <div class="section-label">What's inside</div>
+    <div class="section-title">Everything you need in a PDF app</div>
+    <div class="feature-grid">
+
+      <div class="feature-card">
+        <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></div>
+        <h3>7 Annotation Tools</h3>
+        <p>Highlight, draw, add notes, place shapes, whiteout, sign, and checkmark. Long-press any annotation to delete, recolor, or move it.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>
+        <h3>Full-Text Search</h3>
+        <p>Search inside any document. Folio builds a text index the first time you search — results appear instantly after that, with no background syncing.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></div>
+        <h3>Annotation Export</h3>
+        <p>Export a flattened PDF with annotations burned in, or export your notes as Markdown, JSON, or CSV for Obsidian, Notion, or a spreadsheet.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></div>
+        <h3>Multi-Document Tabs</h3>
+        <p>Keep several PDFs open at once. Each tab preserves its own page, zoom, and scroll position across sessions.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+        <h3>Private by Design</h3>
+        <p>Folio never stores, syncs, or transmits your documents or annotations. Open files from your device or any cloud service — what you annotate stays on your phone.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/></svg></div>
+        <h3>3 Themes</h3>
+        <p>Light, Dark, and Slate. All selectable in Settings with live preview. Font selection included. Preferences persist across sessions.</p>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="privacy-strip">
+  <div class="container">
+    <div class="privacy-inner">
+      <div class="privacy-badge">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        Folio never stores or syncs your documents
+      </div>
+      <div class="privacy-badge">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        No account required
+      </div>
+      <div class="privacy-badge">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+        On-device OCR via ML Kit
+      </div>
+      <div class="privacy-badge">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+        Free with optional one-time ad removal
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <footer>
+    <div class="footer-links">
+      <a href="privacy.html">Privacy Policy</a>
+      <a href="#">Google Play</a>
+      <a href="mailto:phantombandwidth@gmail.com">Contact</a>
+    </div>
+    <div class="copyright">© 2026 Folio. All rights reserved. Available in the US, UK, and Australia.</div>
+  </footer>
+</div>
+
+</body>
+</html>

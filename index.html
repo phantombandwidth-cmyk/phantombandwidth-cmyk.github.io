@@ -242,9 +242,8 @@
     const letters = [];
     for (const char of text) {
       if (char === ' ') {
-        const space = document.createElement('span');
-        space.className = 'space';
-        titleEl.appendChild(space);
+        const br = document.createElement('br');
+        titleEl.appendChild(br);
         letters.push(null);
       } else {
         const span = document.createElement('span');

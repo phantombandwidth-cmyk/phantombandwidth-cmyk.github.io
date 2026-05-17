@@ -1,329 +1,666 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PHANTOM BANDWIDTH</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@200;300&display=swap" rel="stylesheet">
-  <style>
-    *, *::before, *::after {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Phantom Bandwidth</title>
+<meta name="description" content="small quiet things to come back to">
+<link rel="canonical" href="https://phantombw.xyz/">
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2016%2016'%3E%3Crect%20width='16'%20height='16'%20fill='%23e9dcc0'/%3E%3Crect%20x='3'%20y='2'%20width='10'%20height='11'%20fill='%235c4a3a'/%3E%3Crect%20x='4'%20y='3'%20width='8'%20height='7'%20fill='%23a9c4dd'/%3E%3Crect%20x='4'%20y='7'%20width='8'%20height='3'%20fill='%23ecc79f'/%3E%3Crect%20x='7'%20y='3'%20width='1'%20height='7'%20fill='%235c4a3a'/%3E%3Crect%20x='4'%20y='6'%20width='8'%20height='1'%20fill='%235c4a3a'/%3E%3Crect%20x='3'%20y='13'%20width='10'%20height='2'%20fill='%238d7053'/%3E%3C/svg%3E">
+<meta name="theme-color" content="#e9dcc0">
+<link rel="manifest" href="manifest.webmanifest">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Phantom Bandwidth">
+<meta property="og:title" content="Phantom Bandwidth">
+<meta property="og:description" content="small quiet things to come back to">
+<meta property="og:url" content="https://phantombw.xyz/">
+<meta property="og:image" content="https://phantombw.xyz/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Phantom Bandwidth">
+<meta name="twitter:description" content="small quiet things to come back to">
+<meta name="twitter:image" content="https://phantombw.xyz/og.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;500;600;700&family=Silkscreen:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  /* ============================================================
+     Phantom Bandwidth — shared cozy / retro lo-fi design system
+     Copy this :root block into each game file (roomtone.html, etc.)
+     to keep the identity consistent without a build step or import.
 
-    html, body {
-      height: 100%;
-      background: #0a0a0a;
-      color: #e0e0e0;
-      font-family: 'Outfit', sans-serif;
-      overflow: hidden;
-    }
+     Cozy palette (no pure black) on a decorative retro small-web
+     skin: chunky pixel borders, hard offset block shadows, dithered
+     texture, patterned title bars, pixel corner ornaments, pixel
+     typography. Quiet — nothing blinks or pulses.
+     ============================================================ */
+  :root {
+    --paper:      #f3e9d4;
+    --paper-deep: #e9dcc0;
+    --panel-hi:   #fbf3e1;
+    --sage:       #8fa67d;
+    --rose:       #cf8d83;
+    --peach:      #e6b483;
+    --sand:       #d8bd8f;
+    --brown:      #5c4a3a;
+    --brown-soft: #8a7560;
+    --ink:        #3f5169;
 
-    body {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      position: relative;
-    }
+    --font-pixel: "Pixelify Sans", "Trebuchet MS", system-ui, sans-serif;
+    --font-mono:  "Silkscreen", "Courier New", monospace;
+    --bevel: 4px;
 
-    /* particle canvas */
-    #particles {
-      position: fixed;
-      inset: 0;
-      z-index: 0;
-      pointer-events: none;
-    }
+    /* Pixel corner ornament: four 6px L-brackets, one per corner.
+       Reused on every .panel via the .panel::before overlay. */
+    --corner:
+      linear-gradient(var(--brown),var(--brown)) 0 0/8px 2px no-repeat,
+      linear-gradient(var(--brown),var(--brown)) 0 0/2px 8px no-repeat,
+      linear-gradient(var(--brown),var(--brown)) 100% 0/8px 2px no-repeat,
+      linear-gradient(var(--brown),var(--brown)) 100% 0/2px 8px no-repeat,
+      linear-gradient(var(--brown),var(--brown)) 0 100%/8px 2px no-repeat,
+      linear-gradient(var(--brown),var(--brown)) 0 100%/2px 8px no-repeat,
+      linear-gradient(var(--brown),var(--brown)) 100% 100%/8px 2px no-repeat,
+      linear-gradient(var(--brown),var(--brown)) 100% 100%/2px 8px no-repeat;
+  }
 
-    /* subtle center glow */
-    .glow {
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      width: 600px;
-      height: 600px;
-      background: radial-gradient(circle, rgba(255, 255, 255, 0.018) 0%, transparent 70%);
-      z-index: 0;
-      pointer-events: none;
-      animation: glowPulse 8s ease-in-out infinite;
-    }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
 
-    @keyframes glowPulse {
-      0%, 100% { opacity: 0.6; transform: translate(-50%, -50%) scale(1); }
-      50% { opacity: 1; transform: translate(-50%, -50%) scale(1.15); }
-    }
+  body {
+    font-family: var(--font-pixel);
+    font-size: 18px;
+    color: var(--brown);
+    background-color: var(--paper);
+    background-image:
+      linear-gradient(180deg, rgba(230,180,131,0.18), transparent 38%),
+      linear-gradient(0deg, rgba(143,166,125,0.16), transparent 34%);
+    background-attachment: fixed;
+    min-height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 56px 20px 40px;
+    line-height: 1.55;
+    image-rendering: pixelated;
+    position: relative;
+    overflow-x: hidden;
+  }
 
-    /* noise overlay */
-    .noise {
-      position: fixed;
-      inset: 0;
-      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
-      pointer-events: none;
-      z-index: 1;
-    }
+  /* Dither / pixel-noise overlay */
+  body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 9999;
+    opacity: 0.4;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='4'%3E%3Crect width='1' height='1' x='0' y='0' fill='%235c4a3a' fill-opacity='0.10'/%3E%3Crect width='1' height='1' x='2' y='2' fill='%235c4a3a' fill-opacity='0.10'/%3E%3C/svg%3E");
+    background-size: 4px 4px;
+  }
 
-    .container {
-      position: relative;
-      z-index: 2;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 3rem;
-    }
+  .wrap {
+    width: 100%;
+    max-width: 560px;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+  }
 
-    h1 {
-      font-weight: 200;
-      font-size: clamp(1.4rem, 4vw, 2.6rem);
-      letter-spacing: 0.45em;
-      text-transform: uppercase;
-      color: #f0f0f0;
-      text-align: center;
-      line-height: 1.6;
-    }
+  /* Patterned bar — diagonal pixel hatch behind label text.
+     Shared by titlebar and every panel .bar. */
+  .bar {
+    font-family: var(--font-mono);
+    letter-spacing: 0.04em;
+    background-color: var(--sand);
+    background-image:
+      repeating-linear-gradient(45deg,
+        rgba(92,74,58,0.13) 0 2px, transparent 2px 6px);
+    border-bottom: 3px solid var(--brown);
+    padding: 6px 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .bar span { background: inherit; }
 
-    h1 .letter {
-      display: inline-block;
-      opacity: 0;
-      filter: blur(8px);
-      transform: translateY(6px);
-      transition: opacity 0.5s ease, filter 0.5s ease, transform 0.5s ease;
-    }
+  /* Pixel corner ornaments overlaid on any .panel */
+  .panel { position: relative; }
+  .panel::before {
+    content: "";
+    position: absolute;
+    inset: 5px;
+    background: var(--corner);
+    pointer-events: none;
+    z-index: 2;
+  }
 
-    h1 .letter.visible {
-      opacity: 1;
-      filter: blur(0);
-      transform: translateY(0);
-    }
+  /* ---- Wordmark titlebar ---- */
+  header { margin-bottom: 14px; }
 
-    h1 .letter.ghost {
-      opacity: 0;
-      filter: blur(6px);
-      transform: translateY(-2px);
-      transition: opacity 0.7s ease, filter 0.7s ease, transform 0.7s ease;
-    }
+  .titlebar {
+    border: 3px solid var(--brown);
+    background-color: var(--brown);
+    background-image:
+      repeating-linear-gradient(45deg,
+        rgba(243,233,212,0.06) 0 2px, transparent 2px 6px);
+    color: var(--paper);
+    box-shadow: var(--bevel) var(--bevel) 0 rgba(92,74,58,0.35);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+  }
+  .titlebar .leds { display: flex; gap: 5px; }
+  .titlebar .led { width: 9px; height: 9px; border: 1px solid rgba(0,0,0,0.15); }
+  .led.r { background: var(--rose); }
+  .led.y { background: var(--peach); }
+  .led.g { background: var(--sage); }
+  .titlebar h1 {
+    font-family: var(--font-pixel);
+    font-weight: 600;
+    font-size: 1.18rem;
+    letter-spacing: 0.02em;
+  }
+  .titlebar .tick {
+    margin-left: auto;
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    opacity: 0.65;
+    letter-spacing: 0.1em;
+  }
 
-    h1 .space {
-      display: inline-block;
-      width: 0.5em;
-    }
+  /* ---- Decorative pixel banner (cozy night scene) ---- */
+  .banner {
+    border: 3px solid var(--brown);
+    border-top: none;
+    box-shadow: var(--bevel) var(--bevel) 0 rgba(92,74,58,0.35);
+    height: 210px;
+    margin-bottom: 40px;
+    display: block;
+    width: 100%;
+    image-rendering: pixelated;
+    background: #e3d3b4;
+  }
 
-    .divider {
-      width: 40px;
-      height: 1px;
-      background: rgba(255, 255, 255, 0.15);
-      opacity: 0;
-      transition: opacity 0.6s ease;
-    }
+  /* ---- Game panels ---- */
+  .cards { display: flex; flex-direction: column; gap: 22px; }
 
-    .divider.visible {
-      opacity: 1;
-    }
+  .card {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+    border: 3px solid var(--brown);
+    background: var(--paper-deep);
+    box-shadow:
+      inset 2px 2px 0 var(--panel-hi),
+      var(--bevel) var(--bevel) 0 rgba(92,74,58,0.30);
+  }
+  .card .bar { font-size: 0.62rem; color: var(--brown); }
+  .card.live .bar { background-color: var(--peach); }
 
-    .link {
-      font-weight: 300;
-      font-size: 0.8rem;
-      letter-spacing: 0.25em;
-      text-transform: uppercase;
-      color: rgba(255, 255, 255, 0.35);
-      text-decoration: none;
-      padding: 0.6rem 0;
-      position: relative;
-      opacity: 0;
-      transition: color 0.4s ease, opacity 0.6s ease;
-    }
+  .card .body {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 20px 18px 22px;
+  }
 
-    .link.visible {
-      opacity: 1;
-    }
+  .glyph {
+    flex: none;
+    width: 60px; height: 60px;
+    border: 3px solid var(--brown);
+    box-shadow: 2px 2px 0 rgba(92,74,58,0.25);
+    image-rendering: pixelated;
+    display: grid;
+    place-items: center;
+  }
+  .glyph.roomtone { background: var(--peach); }
+  .glyph.tidepool { background: var(--sage); }
 
-    .link::after {
-      content: '';
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      width: 0;
-      height: 1px;
-      background: rgba(255, 255, 255, 0.4);
-      transition: width 0.4s ease;
-    }
+  .card h2 {
+    font-family: var(--font-pixel);
+    font-weight: 600;
+    font-size: 1.42rem;
+    color: var(--brown);
+    line-height: 1.1;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .card h2::before {
+    content: "";
+    width: 7px; height: 7px;
+    background: var(--rose);
+    flex: none;
+  }
+  .card.soon h2::before { background: var(--brown-soft); }
+  .card p { color: var(--brown-soft); font-size: 0.92rem; margin-top: 6px; }
 
-    .link:hover {
-      color: rgba(255, 255, 255, 0.7);
-    }
+  .card.live { transition: none; }
+  .card.live:hover {
+    transform: translate(2px, 2px);
+    box-shadow:
+      inset 2px 2px 0 var(--panel-hi),
+      2px 2px 0 rgba(92,74,58,0.30);
+  }
+  .card.soon { opacity: 0.62; cursor: default; }
+  .card.soon .bar { background-color: var(--paper-deep); }
 
-    .link:hover::after {
-      width: 100%;
-    }
-  </style>
+  /* ---- Dotted pixel divider ---- */
+  .divider {
+    height: 6px;
+    margin: 38px 0 32px;
+    background-image:
+      repeating-linear-gradient(90deg,
+        var(--brown-soft) 0 5px, transparent 5px 12px);
+    opacity: 0.6;
+  }
+
+  /* ---- Help me out ---- */
+  .support {
+    border: 3px solid var(--brown);
+    background: var(--paper-deep);
+    box-shadow:
+      inset 2px 2px 0 var(--panel-hi),
+      var(--bevel) var(--bevel) 0 rgba(92,74,58,0.30);
+  }
+  .support .bar { font-size: 0.62rem; }
+  .support .links {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 18px;
+  }
+  .support a {
+    color: var(--ink);
+    text-decoration: none;
+    border: 2px solid var(--ink);
+    background: var(--panel-hi);
+    padding: 10px 14px;
+    box-shadow: 2px 2px 0 rgba(63,81,105,0.35);
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+  .support a b {
+    font-family: var(--font-pixel);
+    font-size: 0.98rem;
+    font-weight: 600;
+  }
+  .support a span {
+    font-family: var(--font-mono);
+    font-size: 0.5rem;
+    color: var(--brown-soft);
+    letter-spacing: 0.03em;
+    line-height: 1.5;
+  }
+  .support a:hover { transform: translate(2px, 2px); box-shadow: none; }
+
+  /* ---- lo-fi radio ---- */
+  .player {
+    margin-top: 22px;
+    border: 3px solid var(--brown);
+    background: var(--paper-deep);
+    box-shadow:
+      inset 2px 2px 0 var(--panel-hi),
+      var(--bevel) var(--bevel) 0 rgba(92,74,58,0.30);
+  }
+  .player .bar { font-size: 0.62rem; }
+  .player-body { display: flex; align-items: center; gap: 14px; padding: 14px 16px; }
+  .player-btn {
+    font-family: var(--font-mono);
+    font-size: 0.58rem;
+    letter-spacing: 0.06em;
+    color: var(--brown);
+    background: var(--peach);
+    border: 2px solid var(--brown);
+    padding: 9px 14px;
+    cursor: pointer;
+    display: flex; align-items: center; gap: 8px;
+    box-shadow: 2px 2px 0 rgba(92,74,58,0.35);
+  }
+  .player-btn:hover { transform: translate(2px, 2px); box-shadow: none; }
+  .player-btn[aria-pressed="true"] { background: var(--sage); }
+  .player-btn .ico { font-size: 0.66rem; line-height: 1; }
+  .player-vol { display: flex; align-items: center; gap: 10px; flex: 1; }
+  .player-vol .vk {
+    font-family: var(--font-mono);
+    font-size: 0.5rem;
+    letter-spacing: 0.06em;
+    color: var(--brown-soft);
+  }
+  .player-vol input[type=range] {
+    flex: 1;
+    -webkit-appearance: none; appearance: none;
+    height: 10px;
+    background: var(--panel-hi);
+    border: 2px solid var(--brown);
+    padding: 0;
+    image-rendering: pixelated;
+  }
+  .player-vol input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none; appearance: none;
+    width: 12px; height: 16px; border: 0;
+    background: var(--brown); cursor: pointer;
+  }
+  .player-vol input[type=range]::-moz-range-thumb {
+    width: 12px; height: 16px; border: 0;
+    background: var(--brown); cursor: pointer;
+  }
+
+  footer {
+    margin-top: 36px;
+    text-align: center;
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    letter-spacing: 0.08em;
+    color: var(--brown-soft);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+  }
+  footer .orn {
+    width: 5px; height: 5px;
+    background: var(--brown-soft);
+    display: inline-block;
+  }
+
+  @media (max-width: 480px) {
+    body { padding-top: 36px; font-size: 17px; }
+  }
+</style>
 </head>
 <body>
-  <canvas id="particles"></canvas>
-  <div class="glow"></div>
-  <div class="noise"></div>
+  <div class="wrap">
+    <header>
+      <div class="titlebar">
+        <span class="leds" aria-hidden="true">
+          <span class="led r"></span>
+          <span class="led y"></span>
+          <span class="led g"></span>
+        </span>
+        <h1>Phantom Bandwidth</h1>
+        <span class="tick">v1</span>
+      </div>
+      <canvas class="banner" id="garden" width="554" height="210" role="img" aria-label="a cozy pixel window garden: detailed potted plants on a sunlit sill"></canvas>
+    </header>
 
-  <div class="container">
-    <h1 id="title"></h1>
-    <div class="divider" id="divider"></div>
-    <a class="link" id="link" href="https://groups.google.com/g/folio_testers" target="_blank" rel="noopener noreferrer">Join the Community</a>
+    <main class="cards">
+      <a class="card panel live" href="roomtone.html">
+        <div class="bar">
+          <span>ROOMTONE.EXE</span>
+          <span>&#9656; OPEN</span>
+        </div>
+        <div class="body">
+          <span class="glyph roomtone" aria-hidden="true">
+            <svg width="34" height="34" viewBox="0 0 32 32" shape-rendering="crispEdges">
+              <rect x="0" y="0" width="32" height="32" fill="#ece0c4"/>
+              <rect x="4" y="3" width="24" height="21" fill="#2a2018"/>
+              <rect x="5" y="4" width="22" height="19" fill="#6d553e"/>
+              <rect x="5" y="4" width="22" height="2" fill="#ab8c66"/>
+              <rect x="5" y="4" width="2" height="19" fill="#8d7053"/>
+              <rect x="25" y="4" width="2" height="19" fill="#48392c"/>
+              <rect x="7" y="6" width="18" height="15" fill="#a9c4dd"/>
+              <rect x="7" y="13" width="18" height="5" fill="#c7d3da"/>
+              <rect x="7" y="18" width="18" height="3" fill="#ecc79f"/>
+              <rect x="20" y="8" width="3" height="3" fill="#fff4d4"/>
+              <rect x="9" y="9" width="6" height="2" fill="#f7f0df"/>
+              <rect x="10" y="8" width="4" height="1" fill="#fffbef"/>
+              <rect x="15" y="6" width="2" height="15" fill="#6d553e"/>
+              <rect x="7" y="12" width="18" height="2" fill="#6d553e"/>
+              <rect x="13" y="13" width="2" height="8" fill="#5f7a52"/>
+              <rect x="16" y="10" width="2" height="11" fill="#6e8a5e"/>
+              <rect x="16" y="10" width="1" height="4" fill="#9bb682"/>
+              <rect x="19" y="13" width="2" height="8" fill="#5f7a52"/>
+              <rect x="12" y="19" width="9" height="6" fill="#2a2018"/>
+              <rect x="13" y="20" width="7" height="4" fill="#bd6d43"/>
+              <rect x="13" y="20" width="2" height="4" fill="#d98a5c"/>
+              <rect x="18" y="20" width="2" height="4" fill="#9c5536"/>
+              <rect x="2" y="24" width="28" height="3" fill="#2a2018"/>
+              <rect x="3" y="24" width="26" height="2" fill="#9a7d5b"/>
+              <rect x="4" y="27" width="24" height="2" fill="#6d553e"/>
+            </svg>
+          </span>
+          <div>
+            <h2>Roomtone</h2>
+            <p>A small room that follows the light of your day. Decorate it slowly.</p>
+          </div>
+        </div>
+      </a>
+
+      <div class="card panel soon" aria-disabled="true">
+        <div class="bar">
+          <span>TIDEPOOL.EXE</span>
+          <span>&#9655; SOON</span>
+        </div>
+        <div class="body">
+          <span class="glyph tidepool" aria-hidden="true">
+            <svg width="34" height="34" viewBox="0 0 32 32" shape-rendering="crispEdges">
+              <rect x="0" y="0" width="32" height="32" fill="#ece0c4"/>
+              <rect x="0" y="2" width="32" height="6" fill="#cdd9e0"/>
+              <rect x="0" y="8" width="32" height="10" fill="#3f5169"/>
+              <rect x="0" y="8" width="32" height="2" fill="#56688a"/>
+              <rect x="0" y="12" width="32" height="1" fill="#6c7f9f"/>
+              <rect x="0" y="15" width="32" height="1" fill="#6c7f9f"/>
+              <rect x="0" y="18" width="32" height="2" fill="#e9dcbf"/>
+              <rect x="2" y="17" width="6" height="1" fill="#fbf4e6"/>
+              <rect x="17" y="17" width="7" height="1" fill="#fbf4e6"/>
+              <rect x="0" y="20" width="32" height="4" fill="#c7a978"/>
+              <rect x="0" y="24" width="32" height="8" fill="#d8bd8f"/>
+              <rect x="0" y="24" width="32" height="1" fill="#e6cd9c"/>
+              <rect x="6" y="23" width="8" height="7" fill="#2a2018"/>
+              <rect x="7" y="24" width="6" height="5" fill="#e0a59c"/>
+              <rect x="8" y="24" width="4" height="2" fill="#f0cdb4"/>
+              <rect x="9" y="26" width="3" height="3" fill="#cf8d83"/>
+              <rect x="10" y="27" width="1" height="1" fill="#f0cdb4"/>
+              <rect x="19" y="26" width="4" height="4" fill="#2a2018"/>
+              <rect x="20" y="27" width="2" height="2" fill="#8fae9b"/>
+              <rect x="25" y="26" width="5" height="3" fill="#2a2018"/>
+              <rect x="26" y="27" width="3" height="1" fill="#9a8f86"/>
+            </svg>
+          </span>
+          <div>
+            <h2>Tidepool</h2>
+            <p>A quiet stretch of shore where small things wash up over time.</p>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <section class="player panel" aria-label="ambient lo-fi music">
+      <div class="bar"><span>LO-FI RADIO</span><span aria-hidden="true">&#9834;</span></div>
+      <div class="player-body">
+        <button id="lofiToggle" class="player-btn" type="button" aria-pressed="false">
+          <span class="ico" aria-hidden="true">&#9654;</span><span class="lbl">PLAY</span>
+        </button>
+        <label class="player-vol">
+          <span class="vk">VOL</span>
+          <input id="lofiVol" type="range" min="0" max="100" step="1" value="50" aria-label="music volume">
+        </label>
+      </div>
+    </section>
+
+    <div class="divider" aria-hidden="true"></div>
+
+    <section class="support panel">
+      <div class="bar"><span>HELP ME OUT</span><span>&#9829;</span></div>
+      <div class="links">
+        <a href="https://ko-fi.com/phantombandwidth" target="_blank" rel="noopener noreferrer" data-help>
+          <b>ko-fi</b><span>buy me a coffee &middot; directly supports this site</span>
+        </a>
+        <a href="https://groups.google.com/g/folio_testers" target="_blank" rel="noopener noreferrer" data-help>
+          <b>folio testers</b><span>help test Folio &mdash; a free, fully offline PDF viewer &amp; editor</span>
+        </a>
+        <a href="https://groups.google.com/g/nothingapptesting" target="_blank" rel="noopener noreferrer" data-help>
+          <b>nothing app testers</b><span>help test &ldquo;nothing&rdquo; &mdash; a gleefully useless parody app/game</span>
+        </a>
+      </div>
+    </section>
+
+    <footer>
+      <span class="orn" aria-hidden="true"></span>
+      MADE SLOWLY &middot; PHANTOMBW.XYZ
+      <span class="orn" aria-hidden="true"></span>
+    </footer>
   </div>
-
   <script>
-    // --- Particles ---
-    const canvas = document.getElementById('particles');
-    const ctx = canvas.getContext('2d');
-    let particles = [];
-
-    function resizeCanvas() {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
+    // A click on any "Help me out" link is a quiet thank-you that unlocks
+    // instant mail delivery in Roomtone (shared via localStorage, honor system).
+    document.addEventListener("click", function(e){
+      var a = e.target.closest && e.target.closest("[data-help]");
+      if (a) { try { localStorage.setItem("phantombw.supporter", "1"); } catch(_){} }
+    });
+  </script>
+  <script>
+  (function(){
+    var cv=document.getElementById('garden'); if(!cv||!cv.getContext) return;
+    var x=cv.getContext('2d'); x.imageSmoothingEnabled=false;
+    var W=554,H=210,OL='#2a2018';
+    function R(a,b,w,h,c){ if(w<=0||h<=0)return; x.fillStyle=c; x.fillRect(Math.round(a),Math.round(b),Math.round(w),Math.round(h)); }
+    function disc(cx,cy,r,c){ x.fillStyle=c; x.beginPath(); x.arc(cx,cy,r,0,6.2832); x.fill(); }
+    function shade(cx,cy,rw,rh,al){ x.save(); x.globalAlpha=al; x.fillStyle=OL; x.beginPath(); x.ellipse(cx,cy,rw,rh,0,0,6.2832); x.fill(); x.restore(); }
+    // ---- wall ----
+    var wallC=['#ece0c4','#e9dcbf','#e6d8b9','#e3d4b2','#dfcfab','#dbcaa4','#d6c49d'];
+    for (var i=0;i<7;i++) R(0,i*30,W,31,wallC[i]);
+    var gg=x.createRadialGradient(110,176,8,110,176,250);
+    gg.addColorStop(0,'rgba(247,206,140,0.16)'); gg.addColorStop(1,'rgba(247,206,140,0)');
+    x.fillStyle=gg; x.fillRect(0,0,W,H);
+    // ---- window frame ----
+    var WX=158,WY=10,WW=238,WH=132;
+    R(WX-13,WY-13,WW+26,WH+26,OL);
+    R(WX-12,WY-12,WW+24,WH+24,'#6d553e');
+    R(WX-12,WY-12,WW+24,3,'#ab8c66'); R(WX-12,WY-12,3,WH+24,'#8d7053');
+    R(WX+WW+9,WY-12,3,WH+24,'#48392c'); R(WX-12,WY+WH+9,WW+24,3,'#48392c');
+    R(WX-3,WY-3,WW+6,WH+6,OL);
+    // ---- everything beyond the glass is clipped to the pane ----
+    x.save();
+    x.beginPath(); x.rect(WX,WY,WW,WH); x.clip();
+    var sky=x.createLinearGradient(0,WY,0,WY+WH);
+    sky.addColorStop(0,'#a9c4dd'); sky.addColorStop(0.5,'#c7d3da'); sky.addColorStop(0.8,'#ecc79f'); sky.addColorStop(1,'#f1c896');
+    x.fillStyle=sky; x.fillRect(WX,WY,WW,WH);
+    var sgl=x.createRadialGradient(WX+WW*0.74,WY+40,3,WX+WW*0.74,WY+40,46);
+    sgl.addColorStop(0,'rgba(255,244,212,0.95)'); sgl.addColorStop(1,'rgba(255,244,212,0)');
+    x.fillStyle=sgl; disc(WX+WW*0.74,WY+40,46,'rgba(0,0,0,0)'); x.fillStyle=sgl; x.beginPath(); x.arc(WX+WW*0.74,WY+40,46,0,6.2832); x.fill();
+    disc(WX+WW*0.74,WY+40,6.5,'#fff4d4');
+    function cloud(cx,cy,sc){ var L=[[0,0,9],[9,-3,11],[20,0,10],[28,3,8],[13,-7,9]],i;
+      for(i=0;i<L.length;i++) disc(cx+L[i][0]*sc,cy+L[i][1]*sc+2,L[i][2]*sc,'#d6cfb8');
+      for(i=0;i<L.length;i++) disc(cx+L[i][0]*sc,cy+L[i][1]*sc,L[i][2]*sc,'#f7f0df');
+      for(i=0;i<L.length;i++) disc(cx+L[i][0]*sc-2,cy+L[i][1]*sc-3,L[i][2]*sc*0.55,'#fffbef'); }
+    cloud(WX+34,WY+30,0.85); cloud(WX+150,WY+56,1.0);
+    // a tidy low hedge along the bottom of the view (kept inside the glass)
+    R(WX,WY+WH-20,WW,20,'#7c8f63');
+    for (var hbx=WX-4;hbx<WX+WW+8;hbx+=18) disc(hbx,WY+WH-20,12,'#869a72');
+    for (var hbx2=WX+4;hbx2<WX+WW+8;hbx2+=18) disc(hbx2,WY+WH-22,8,'#9bb085');
+    R(WX,WY+WH-6,WW,6,'#6b7d55');
+    x.restore();              // <-- glass clip ends; nothing else bleeds out
+    // muntins (on the frame, over the glass)
+    R(WX+WW/2-3,WY,6,WH,'#6d553e'); R(WX+WW/2-3,WY,2,WH,'#ab8c66');
+    R(WX,WY+WH/2-3,WW,6,'#6d553e'); R(WX,WY+WH/2-3,WW,2,'#ab8c66');
+    // string lights tucked under the top frame
+    for (var sl=0;sl<WW-12;sl+=22){ var dip=((sl/22)%2)?5:1; R(WX+sl,WY+5+dip,22,2,'#3a2e24');
+      var bx=WX+sl+11,by=WY+9+dip,warm=((sl/22)%2)?'#f0a15c':'#f7c768';
+      R(bx-1,by-4,2,2,'#3a2e24');                 // little socket onto the wire
+      disc(bx,by,4.4,OL); disc(bx,by,3.5,warm); disc(bx-1,by-1,1.3,'#fde7ad'); }
+    // ---- windowsill ----
+    var SX=WX-34,SW=WW+68,SY=WY+WH+12;
+    R(SX-1,SY-1,SW+2,13,OL); R(SX,SY,SW,11,'#9a7d5b'); R(SX,SY,SW,3,'#bfa57c'); R(SX,SY+8,SW,3,'#7c6347');
+    R(SX+7,SY+11,SW-14,14,OL); R(SX+8,SY+12,SW-16,12,'#6d553e'); R(SX+8,SY+12,SW-16,2,'#86694b');
+    // a pot, with the plant truly seated in soil:
+    // foliage(cx, soilY) is drawn FIRST (its base extends down into the pot),
+    // then the pot is painted OVER that base so the stems read as planted.
+    function plant(cx,potW,potH,P,foliage){
+      var pb=SY+1, pt=pb-potH, px=cx-potW/2;
+      shade(cx,pb+2,potW*0.62,4,0.20);                 // cast shadow on the sill
+      foliage(cx, pt+Math.round(potH*0.45));           // base sinks into the pot
+      R(px-1,pt-1,potW+2,potH+2,OL);                   // pot body
+      R(px,pt,potW,potH,P.m);
+      R(px,pt,Math.round(potW*0.30),potH,P.h);
+      R(px+Math.round(potW*0.74),pt,Math.round(potW*0.26),potH,P.d);
+      R(px-4,pt-5,potW+8,6,OL);                        // rim (last → masks stems)
+      R(px-3,pt-4,potW+6,4,P.h); R(px+3,pt-4,potW,2,P.m);
+      R(px-3,pt+1,potW+6,1,P.d);
     }
-    window.addEventListener('resize', resizeCanvas);
-    resizeCanvas();
-
-    function createParticles() {
-      particles = [];
-      const count = 40;
-      for (let i = 0; i < count; i++) {
-        particles.push({
-          x: Math.random() * canvas.width,
-          y: Math.random() * canvas.height,
-          r: Math.random() * 1.2 + 0.3,
-          vy: -(Math.random() * 0.15 + 0.05),
-          vx: (Math.random() - 0.5) * 0.1,
-          alpha: Math.random() * 0.12 + 0.03,
-          baseAlpha: 0,
-          targetAlpha: Math.random() * 0.12 + 0.03,
-          pulse: Math.random() * Math.PI * 2,
-          pulseSpeed: Math.random() * 0.008 + 0.003,
-        });
+    // 1) snake plant — upright variegated swords
+    plant(SX+52,42,26,{m:'#bd6d43',h:'#d98a5c',d:'#9c5536'}, function(cx,sy){
+      var bl=[[-15,58,6,-9],[-7,74,7,-4],[1,82,8,0],[8,72,7,4],[11,56,6,5],[-1,66,5,-1]],i;
+      for(i=0;i<bl.length;i++){ var b=bl[i];
+        x.save(); x.translate(cx+b[0],sy); x.rotate(b[3]*0.05);
+        R(-b[2]/2-1,-b[1]-1,b[2]+2,b[1]+2,OL);
+        R(-b[2]/2,-b[1],b[2],b[1],'#4a6b3c');
+        R(-1,-b[1]+2,2,b[1]-4,'#a9c47e');
+        R(b[2]/2-2,-b[1],2,b[1],'#d6c878');
+        x.restore(); } });
+    // 2) round cactus in a little pot
+    plant(SX+118,24,18,{m:'#c47a4a',h:'#dd9863',d:'#9c5536'}, function(cx,sy){
+      x.fillStyle=OL; x.beginPath(); x.arc(cx,sy-15,13,0,6.2832); x.fill();
+      disc(cx,sy-15,11,'#5f7a52'); disc(cx-3,sy-18,6,'#7e9a6d'); disc(cx-4,sy-20,3,'#9bb682');
+      for(var r=0;r<7;r++){ var a=r/7*6.28; R(cx+Math.cos(a)*11-1,sy-15+Math.sin(a)*11-1,2,2,'#3f5530'); }
+      R(cx-2,sy-30,4,4,'#e6a59c'); R(cx-1,sy-31,2,2,'#f3d8c0'); });
+    // 3) leafy plant — rounded foliage mound
+    plant(SX+196,50,28,{m:'#c98a55',h:'#e3a86f',d:'#985f33'}, function(cx,sy){
+      var F=[[0,-28,16],[-13,-20,12],[13,-20,12],[-7,-32,11],[8,-31,11],[0,-40,10]],i;
+      for(i=0;i<F.length;i++) disc(cx+F[i][0],sy+F[i][1],F[i][2]+1.5,OL);
+      for(i=0;i<F.length;i++) disc(cx+F[i][0],sy+F[i][1],F[i][2],'#5f7a52');
+      for(i=0;i<F.length;i++) disc(cx+F[i][0]-3,sy+F[i][1]-4,F[i][2]*0.6,'#7e9a6d');
+      for(i=0;i<F.length;i++) disc(cx+F[i][0]-5,sy+F[i][1]-6,F[i][2]*0.3,'#9bb682');
+      R(cx-2,sy-24,3,24,'#3f5530'); });
+    // 4) trailing ivy — short strands curling just over the sill lip
+    plant(SX+SW-58,36,20,{m:'#9d8557',h:'#bda06d',d:'#7c6644'}, function(cx,sy){
+      var T=[[0,-15,10],[-9,-9,8],[9,-10,8],[0,-22,8]],i;
+      for(i=0;i<T.length;i++) disc(cx+T[i][0],sy+T[i][1],T[i][2]+1.5,OL);
+      for(i=0;i<T.length;i++) disc(cx+T[i][0],sy+T[i][1],T[i][2],'#5f7a52');
+      for(i=0;i<T.length;i++) disc(cx+T[i][0]-3,sy+T[i][1]-4,T[i][2]*0.55,'#86a06f');
+      // strands start up in the clump (the pot is painted over the top of
+      // them) and trail down continuously, curling over the front sill lip —
+      // one connected plant, not a detached blob below the shelf.
+      function strand(vx,dir,len){ for(var n=0;n<len;n++){ var yy=Math.round(sy)+n*3, xx=vx+Math.round(Math.sin(n*0.6)*3)*dir;
+        R(xx,yy,2,3,'#5f7a52');
+        if(n%2===1){ disc(xx-3*dir,yy+1,3.5,OL); disc(xx-3*dir,yy+1,2.5,'#6e8a5e'); } } }
+      strand(cx-7,-1,11); strand(cx+5,1,13); strand(cx+12,1,9); });
+    // a couple of static dust motes in the sun (drawn over the frame is fine)
+    x.globalAlpha=0.5;
+    var dm=[[WX+150,WY+70],[WX+168,WY+96],[WX+185,WY+58],[WX+140,WY+108]];
+    for (var d=0;d<dm.length;d++) R(dm[d][0],dm[d][1],2,2,'#fff3d2');
+    x.globalAlpha=1;
+  })();
+  </script>
+  <script>
+    if ("serviceWorker" in navigator)
+      addEventListener("load", function(){ navigator.serviceWorker.register("sw.js").catch(function(){}); });
+  </script>
+  <!-- generative lo-fi music: ambient site music, starts on first interaction
+       (autoplay policy); on/off + volume via window.LofiEngine + the LO-FI RADIO panel -->
+  <script src="lofi-engine.js" defer></script>
+  <script>
+  (function(){
+    function init(){
+      var E=window.LofiEngine;
+      var btn=document.getElementById("lofiToggle");
+      var vol=document.getElementById("lofiVol");
+      if(!E||!btn||!vol) return;
+      var lbl=btn.querySelector(".lbl"), ico=btn.querySelector(".ico");
+      function sync(){
+        var on=E.isPlaying();
+        btn.setAttribute("aria-pressed", on?"true":"false");
+        lbl.textContent = on?"PAUSE":"PLAY";
+        ico.innerHTML = on ? "&#10073;&#10073;" : "&#9654;";
       }
-    }
-    createParticles();
-
-    function drawParticles() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      for (const p of particles) {
-        p.x += p.vx;
-        p.y += p.vy;
-        p.pulse += p.pulseSpeed;
-
-        // fade particles in over first few seconds
-        if (p.baseAlpha < p.targetAlpha) {
-          p.baseAlpha = Math.min(p.baseAlpha + 0.0003, p.targetAlpha);
-        }
-
-        const flicker = 0.5 + 0.5 * Math.sin(p.pulse);
-        const alpha = p.baseAlpha * (0.4 + 0.6 * flicker);
-
-        // wrap around
-        if (p.y < -5) p.y = canvas.height + 5;
-        if (p.x < -5) p.x = canvas.width + 5;
-        if (p.x > canvas.width + 5) p.x = -5;
-
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
-        ctx.fill();
-      }
-      requestAnimationFrame(drawParticles);
-    }
-    drawParticles();
-
-    // --- Letter animation ---
-    const text = 'PHANTOM BANDWIDTH';
-    const titleEl = document.getElementById('title');
-    const dividerEl = document.getElementById('divider');
-    const linkEl = document.getElementById('link');
-
-    const letters = [];
-    for (const char of text) {
-      if (char === ' ') {
-        const br = document.createElement('br');
-        titleEl.appendChild(br);
-        letters.push(null);
-      } else {
-        const span = document.createElement('span');
-        span.className = 'letter';
-        span.textContent = char;
-        titleEl.appendChild(span);
-        letters.push(span);
-      }
-    }
-
-    const realLetters = letters.filter(l => l !== null);
-    const INTRO_STAGGER = 70;
-
-    // Phase 1: initial reveal
-    function introReveal() {
-      realLetters.forEach((span, i) => {
-        setTimeout(() => {
-          span.classList.add('visible');
-        }, i * INTRO_STAGGER);
+      vol.value = Math.round(E.getVolume()*100);
+      btn.addEventListener("click", function(){
+        if(E.isPlaying()) E.stop(); else E.start();   // persists the on/off choice
+        sync();
       });
-
-      const introDone = realLetters.length * INTRO_STAGGER + 600;
-
-      setTimeout(() => {
-        dividerEl.classList.add('visible');
-      }, introDone);
-
-      setTimeout(() => {
-        linkEl.classList.add('visible');
-      }, introDone + 200);
-
-      // start the loop after everything is visible
-      setTimeout(startLoop, introDone + 1800);
+      vol.addEventListener("input", function(){ E.setVolume((+vol.value)/100); });
+      // engine may auto-start itself on the first gesture if opted in — keep
+      // the button honest without polling hard
+      window.addEventListener("pointerdown", function(){ setTimeout(sync,150); }, {once:true});
+      setInterval(sync, 2000);
+      sync();
     }
-
-    // Phase 2: random disappear, sequential reappear, loop
-    function shuffle(arr) {
-      const a = [...arr];
-      for (let i = a.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [a[i], a[j]] = [a[j], a[i]];
-      }
-      return a;
-    }
-
-    function startLoop() {
-      disappearRandom();
-    }
-
-    function disappearRandom() {
-      const order = shuffle(realLetters.map((_, i) => i));
-      const interval = 220;
-
-      order.forEach((idx, step) => {
-        setTimeout(() => {
-          realLetters[idx].classList.remove('visible');
-          realLetters[idx].classList.add('ghost');
-        }, step * interval);
-      });
-
-      const disappearDone = order.length * interval + 800;
-      setTimeout(reappearSequential, disappearDone);
-    }
-
-    function reappearSequential() {
-      const interval = 80;
-
-      realLetters.forEach((span, i) => {
-        setTimeout(() => {
-          span.classList.remove('ghost');
-          span.classList.add('visible');
-        }, i * interval);
-      });
-
-      const reappearDone = realLetters.length * interval + 2500;
-      setTimeout(disappearRandom, reappearDone);
-    }
-
-    // kick it off
-    setTimeout(introReveal, 600);
+    if(document.readyState==="loading")
+      document.addEventListener("DOMContentLoaded", init);
+    else init();
+  })();
   </script>
 </body>
 </html>

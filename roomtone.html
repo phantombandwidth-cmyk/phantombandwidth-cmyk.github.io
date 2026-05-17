@@ -1,0 +1,2953 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Roomtone — Phantom Bandwidth</title>
+<meta name="description" content="A small room that follows the light of your day. Decorate it slowly.">
+<link rel="canonical" href="https://phantombw.xyz/roomtone.html">
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2016%2016'%3E%3Crect%20width='16'%20height='16'%20fill='%23e9dcc0'/%3E%3Crect%20x='3'%20y='2'%20width='10'%20height='11'%20fill='%235c4a3a'/%3E%3Crect%20x='4'%20y='3'%20width='8'%20height='7'%20fill='%23a9c4dd'/%3E%3Crect%20x='4'%20y='7'%20width='8'%20height='3'%20fill='%23ecc79f'/%3E%3Crect%20x='7'%20y='3'%20width='1'%20height='7'%20fill='%235c4a3a'/%3E%3Crect%20x='4'%20y='6'%20width='8'%20height='1'%20fill='%235c4a3a'/%3E%3Crect%20x='3'%20y='13'%20width='10'%20height='2'%20fill='%238d7053'/%3E%3C/svg%3E">
+<meta name="theme-color" content="#e9dcc0">
+<link rel="manifest" href="manifest.webmanifest">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Phantom Bandwidth">
+<meta property="og:title" content="Roomtone — a cozy room that follows your day">
+<meta property="og:description" content="A small room that follows the light of your day. Decorate it slowly.">
+<meta property="og:url" content="https://phantombw.xyz/roomtone.html">
+<meta property="og:image" content="https://phantombw.xyz/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Roomtone — Phantom Bandwidth">
+<meta name="twitter:description" content="A small room that follows the light of your day. Decorate it slowly.">
+<meta name="twitter:image" content="https://phantombw.xyz/og.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;500;600;700&family=Silkscreen:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  /* ============================================================
+     Roomtone — Game 1. Shares the Phantom Bandwidth cozy / retro
+     lo-fi design system (the :root block below is the locked
+     identity, kept in sync with index.html — copied, not imported,
+     to preserve the no-build single-file rule).
+     ============================================================ */
+  :root {
+    --paper:      #f3e9d4;
+    --paper-deep: #e9dcc0;
+    --panel-hi:   #fbf3e1;
+    --sage:       #8fa67d;
+    --rose:       #cf8d83;
+    --peach:      #e6b483;
+    --sand:       #d8bd8f;
+    --brown:      #5c4a3a;
+    --brown-soft: #8a7560;
+    --ink:        #3f5169;
+    --font-pixel: "Pixelify Sans", "Trebuchet MS", system-ui, sans-serif;
+    --font-mono:  "Silkscreen", "Courier New", monospace;
+    --bevel: 4px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    font-family: var(--font-pixel);
+    color: var(--brown);
+    background-color: var(--paper);
+    background-image:
+      linear-gradient(180deg, rgba(230,180,131,0.18), transparent 38%),
+      linear-gradient(0deg, rgba(143,166,125,0.16), transparent 34%);
+    min-height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px 16px 36px;
+    image-rendering: pixelated;
+    position: relative;
+    overflow-x: hidden;
+  }
+  body::after {
+    content: "";
+    position: fixed; inset: 0; pointer-events: none; z-index: 9999;
+    opacity: 0.35;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='4'%3E%3Crect width='1' height='1' x='0' y='0' fill='%235c4a3a' fill-opacity='0.10'/%3E%3Crect width='1' height='1' x='2' y='2' fill='%235c4a3a' fill-opacity='0.10'/%3E%3C/svg%3E");
+    background-size: 4px 4px;
+  }
+  .shell { width: 100%; max-width: 760px; }
+
+  /* keyboard focus — visible, on-theme, never on mouse/touch */
+  :focus { outline: none; }
+  a:focus-visible, button:focus-visible, [tabindex]:focus-visible,
+  input:focus-visible, .act:focus-visible, .tgl:focus-visible {
+    outline: 3px solid var(--ink);
+    outline-offset: 2px;
+  }
+
+  /* shared bar look */
+  .bar {
+    font-family: var(--font-mono);
+    letter-spacing: 0.04em;
+    background-color: var(--sand);
+    background-image: repeating-linear-gradient(45deg,
+      rgba(92,74,58,0.13) 0 2px, transparent 2px 6px);
+    border-bottom: 3px solid var(--brown);
+    padding: 7px 11px;
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 0.62rem;
+  }
+
+  /* ---- top window-chrome ---- */
+  .titlebar {
+    border: 3px solid var(--brown);
+    background-color: var(--brown);
+    background-image: repeating-linear-gradient(45deg,
+      rgba(243,233,212,0.06) 0 2px, transparent 2px 6px);
+    color: var(--paper);
+    box-shadow: var(--bevel) var(--bevel) 0 rgba(92,74,58,0.35);
+    display: flex; align-items: center; gap: 10px;
+    padding: 9px 12px;
+  }
+  .titlebar .leds { display: flex; gap: 5px; }
+  .titlebar .led { width: 9px; height: 9px; border: 1px solid rgba(0,0,0,0.15); }
+  .led.r { background: var(--rose); }
+  .led.y { background: var(--peach); }
+  .led.g { background: var(--sage); }
+  .titlebar h1 { font-size: 1.05rem; font-weight: 600; }
+  .titlebar a {
+    margin-left: auto; color: var(--paper);
+    font-family: var(--font-mono); font-size: 0.58rem;
+    text-decoration: none; opacity: 0.75; letter-spacing: 0.08em;
+  }
+  .titlebar a:hover { opacity: 1; }
+
+  /* ---- the room scene ---- */
+  .stage {
+    border: 3px solid var(--brown);
+    border-top: none;
+    box-shadow: var(--bevel) var(--bevel) 0 rgba(92,74,58,0.35);
+    background: #2b2533;
+    position: relative;
+    line-height: 0;
+  }
+  #room {
+    display: block;
+    width: 100%;
+    height: auto;
+    image-rendering: pixelated;
+    touch-action: none;
+  }
+  #firstHint {
+    position: absolute; left: 12px; right: 12px; bottom: 12px;
+    display: none;
+    font-family: var(--font-pixel); font-size: 0.92rem; line-height: 1.5;
+    color: var(--brown);
+    background: var(--paper);
+    border: 3px solid var(--brown);
+    box-shadow: var(--bevel) var(--bevel) 0 rgba(43,37,51,0.4);
+    padding: 12px 14px;
+  }
+  #awayNote {
+    position: absolute; left: 12px; bottom: 12px; max-width: 60%;
+    font-family: var(--font-mono); font-size: 0.56rem; line-height: 1.6;
+    color: var(--brown); background: var(--paper);
+    border: 2px solid var(--brown);
+    box-shadow: 3px 3px 0 rgba(43,37,51,0.35);
+    padding: 9px 11px; cursor: pointer;
+    transition: opacity 1.2s ease;
+  }
+  #awayNote[hidden] { display: none; }
+  #firstHint b { font-weight: 600; }
+  #firstHint em { font-style: normal; color: var(--ink); font-weight: 600; }
+  #firstHint button {
+    display: block; margin: 10px auto 2px;
+    font-family: var(--font-pixel); font-size: 0.9rem;
+    color: var(--brown); background: var(--peach);
+    border: 2px solid var(--brown); padding: 6px 16px; cursor: pointer;
+    box-shadow: 2px 2px 0 rgba(92,74,58,0.3);
+  }
+  #firstHint button:hover { transform: translate(2px,2px); box-shadow: none; }
+
+  /* heads-up overlay row */
+  .hud {
+    display: flex; gap: 14px; align-items: stretch;
+    margin-top: 18px; flex-wrap: wrap;
+  }
+  .panel {
+    border: 3px solid var(--brown);
+    background: var(--paper-deep);
+    box-shadow:
+      inset 2px 2px 0 var(--panel-hi),
+      var(--bevel) var(--bevel) 0 rgba(92,74,58,0.30);
+  }
+  .stamps { flex: 1; min-width: 150px; }
+  .stamps .body { padding: 12px 14px; display: flex; align-items: center; gap: 12px; }
+  .stamp-ico {
+    width: 34px; height: 34px; flex: none;
+    border: 2px solid var(--brown);
+    background:
+      repeating-linear-gradient(0deg, transparent 0 3px, rgba(92,74,58,0.12) 3px 4px),
+      var(--peach);
+  }
+  .stamp-n { font-family: var(--font-mono); font-size: 1.5rem; font-weight: 700; line-height: 1; }
+  .stamp-l { font-family: var(--font-mono); font-size: 0.55rem; color: var(--brown-soft); }
+
+  .actions { display: flex; flex-direction: column; gap: 14px; }
+  button.act {
+    font-family: var(--font-pixel);
+    font-size: 1rem;
+    color: var(--brown);
+    border: 3px solid var(--brown);
+    background: var(--panel-hi);
+    box-shadow: var(--bevel) var(--bevel) 0 rgba(92,74,58,0.30);
+    padding: 11px 18px;
+    cursor: pointer;
+    display: flex; align-items: center; gap: 9px;
+    position: relative;
+  }
+  button.act:hover { transform: translate(2px,2px); box-shadow: 1px 1px 0 rgba(92,74,58,0.30); }
+  button.act .sq { width: 9px; height: 9px; background: var(--rose); flex: none; }
+  button.act.shop .sq { background: var(--sage); }
+  .dot-badge {
+    position: absolute; top: -7px; right: -7px;
+    min-width: 19px; height: 19px; padding: 0 4px;
+    background: var(--rose); color: var(--paper);
+    border: 2px solid var(--brown);
+    font-family: var(--font-mono); font-size: 0.55rem;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  /* inventory drawer */
+  .drawer { margin-top: 14px; }
+  .drawer .grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(78px,1fr));
+    gap: 10px; padding: 14px;
+  }
+  .inv-item {
+    border: 2px solid var(--brown);
+    background: var(--panel-hi);
+    padding: 7px 4px 5px;
+    text-align: center;
+    cursor: grab;
+    box-shadow: 2px 2px 0 rgba(92,74,58,0.22);
+    user-select: none;
+  }
+  .inv-item:active { cursor: grabbing; }
+  .inv-item canvas { display: block; margin: 0 auto 4px; image-rendering: pixelated; }
+  .inv-item span { font-size: 0.72rem; color: var(--brown); display: block; line-height: 1.1; }
+  .empty-note {
+    grid-column: 1 / -1;
+    padding: 16px; font-size: 0.85rem; color: var(--brown-soft);
+    font-family: var(--font-pixel);
+  }
+
+  /* modal */
+  .scrim {
+    position: fixed; inset: 0; background: rgba(43,37,51,0.55);
+    display: none; align-items: center; justify-content: center;
+    padding: 20px; z-index: 100;
+  }
+  .scrim.open { display: flex; }
+  .modal {
+    width: 100%; max-width: 560px; max-height: 86vh;
+    transition: max-height 0.15s ease;
+    display: flex; flex-direction: column;
+    border: 3px solid var(--brown);
+    background: var(--paper);
+    box-shadow: 6px 6px 0 rgba(43,37,51,0.4);
+  }
+  .modal .bar { font-size: 0.66rem; }
+  .modal .bar button {
+    font-family: var(--font-mono); font-size: 0.62rem;
+    background: var(--brown); color: var(--paper);
+    border: 2px solid var(--brown); cursor: pointer; padding: 2px 8px;
+  }
+  .modal .scroll { overflow-y: auto; padding: 16px; }
+  .cat-title {
+    font-family: var(--font-mono); font-size: 0.62rem;
+    color: var(--brown-soft); letter-spacing: 0.08em;
+    margin: 14px 0 8px; border-bottom: 2px dotted var(--brown-soft);
+    padding-bottom: 5px;
+  }
+  .cat-title:first-child { margin-top: 0; }
+  .setrow {
+    display: flex; align-items: center; gap: 12px;
+    padding: 13px 4px; border-bottom: 2px dotted rgba(138,117,96,0.5);
+  }
+  .setrow .meta { flex: 1; min-width: 0; }
+  .setrow .meta b { font-family: var(--font-pixel); font-size: 1rem; font-weight: 600; display: block; }
+  .setrow .meta small { font-family: var(--font-mono); font-size: 0.5rem; color: var(--brown-soft); letter-spacing: 0.04em; }
+  .setrow .tgl {
+    flex: none; cursor: pointer;
+    font-family: var(--font-pixel); font-size: 0.9rem; font-weight: 600;
+    border: 2px solid var(--brown); color: var(--brown);
+    background: var(--paper-deep); padding: 6px 14px; min-width: 62px;
+    box-shadow: 2px 2px 0 rgba(92,74,58,0.3);
+  }
+  .setrow .tgl.on { background: var(--sage); }
+  .setrow .tgl:active { transform: translate(2px,2px); box-shadow: none; }
+  .shelf-row {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(212px,1fr));
+    gap: 10px;
+  }
+  .ware {
+    border: 2px solid var(--brown); background: var(--panel-hi);
+    padding: 9px; display: flex; gap: 10px; align-items: center;
+  }
+  .ware canvas { image-rendering: pixelated; flex: none; }
+  .ware .meta { flex: 1; min-width: 0; }
+  .ware .meta b { font-size: 0.92rem; font-weight: 600; display: block; }
+  .ware .meta small {
+    font-family: var(--font-mono); font-size: 0.5rem;
+    color: var(--brown-soft); letter-spacing: 0.05em;
+  }
+  .ware button {
+    font-family: var(--font-mono); font-size: 0.62rem; font-weight: 700;
+    letter-spacing: 0.02em;
+    cursor: pointer;
+    border: 2px solid var(--brown); background: var(--peach); color: var(--brown);
+    padding: 6px 9px; white-space: nowrap;
+    box-shadow: 2px 2px 0 rgba(92,74,58,0.3);
+    display: flex; align-items: center; justify-content: center; gap: 5px;
+    min-width: 58px;
+  }
+  .ware button .cnum {
+    font-family: var(--font-mono); font-size: 1.02rem; font-weight: 700;
+    line-height: 1; color: var(--brown);
+  }
+  .ware button .cunit {
+    font-family: var(--font-mono); font-size: 0.5rem; font-weight: 400;
+    letter-spacing: 0.06em; color: var(--brown);
+    opacity: 0.75; text-transform: uppercase;
+  }
+  .ware button:hover:not(:disabled) { transform: translate(2px,2px); box-shadow: none; }
+  .ware button:disabled { opacity: 0.45; cursor: default; background: var(--paper-deep); }
+  .ware.owned { opacity: 0.7; }
+
+  .mail-row {
+    border: 2px solid var(--brown); background: var(--panel-hi);
+    padding: 10px 12px; display: flex; gap: 10px; align-items: center;
+    margin-bottom: 9px;
+  }
+  .mail-row.ready { background: #e7efdc; }
+  .mail-row .meta { flex: 1; }
+  .mail-row .meta b { display: block; font-size: 0.92rem; }
+  .mail-row .meta small { font-family: var(--font-mono); font-size: 0.5rem; color: var(--brown-soft); }
+  .mail-row .stat { font-family: var(--font-mono); font-size: 0.56rem; }
+  .mail-row .stat.eta { color: var(--brown-soft); }
+  .mail-row .stat.here { color: var(--sage); }
+  .mail-skip {
+    display: flex; flex-direction: column; gap: 7px; align-items: flex-start;
+    margin: 4px 0 9px;
+  }
+  .mail-skip small {
+    font-family: var(--font-mono); font-size: 0.5rem; color: var(--brown-soft);
+    letter-spacing: 0.04em;
+  }
+  .skipbtn {
+    font-family: var(--font-pixel); font-size: 0.92rem; font-weight: 600;
+    cursor: pointer; color: var(--paper);
+    border: 2px solid var(--brown); background: var(--rose);
+    padding: 7px 12px; box-shadow: 2px 2px 0 rgba(92,74,58,0.3);
+  }
+  .skipbtn:hover { transform: translate(2px,2px); box-shadow: none; }
+  .skip-links { display: flex; flex-direction: column; gap: 7px; width: 100%; }
+  .skip-links[hidden] { display: none; }
+  .skip-links a {
+    text-decoration: none; color: var(--ink);
+    border: 2px solid var(--ink); background: var(--panel-hi);
+    padding: 7px 10px; box-shadow: 2px 2px 0 rgba(63,81,105,0.3);
+    display: flex; flex-direction: column; gap: 2px;
+  }
+  .skip-links a b { font-family: var(--font-pixel); font-size: 0.92rem; font-weight: 600; }
+  .skip-links a span {
+    font-family: var(--font-mono); font-size: 0.5rem; color: var(--brown-soft);
+    letter-spacing: 0.03em; line-height: 1.5;
+  }
+  .skip-links a:hover { transform: translate(2px,2px); box-shadow: none; }
+
+  /* drag ghost */
+  #ghost {
+    position: fixed; pointer-events: none; z-index: 200;
+    display: none; image-rendering: pixelated;
+    transform: translate(-50%, -50%);
+    filter: drop-shadow(2px 3px 0 rgba(43,37,51,0.4));
+  }
+
+  #ctxMenu, #ctxRoom {
+    position: fixed; z-index: 300; display: none;
+    min-width: 152px;
+    border: 3px solid var(--brown);
+    background: var(--paper);
+    box-shadow: 4px 4px 0 rgba(43,37,51,0.4);
+  }
+  #ctxMenu .mhdr, #ctxRoom .mhdr {
+    font-family: var(--font-mono); font-size: 0.54rem;
+    letter-spacing: 0.05em; color: var(--brown-soft);
+    background: var(--sand);
+    background-image: repeating-linear-gradient(45deg,
+      rgba(92,74,58,0.13) 0 2px, transparent 2px 6px);
+    border-bottom: 2px solid var(--brown);
+    padding: 5px 9px;
+  }
+  #ctxMenu button, #ctxRoom button {
+    display: flex; align-items: center; gap: 8px;
+    width: 100%; text-align: left;
+    font-family: var(--font-pixel); font-size: 0.92rem;
+    color: var(--brown); background: var(--paper);
+    border: 0; border-bottom: 1px solid rgba(92,74,58,0.14);
+    padding: 8px 11px; cursor: pointer;
+  }
+  #ctxMenu button:last-child, #ctxRoom button:last-child { border-bottom: 0; }
+  #ctxMenu button:hover, #ctxRoom button:hover { background: var(--paper-deep); }
+  #ctxMenu button .sq, #ctxRoom button .sq { width: 8px; height: 8px; flex: none; background: var(--sage); }
+  #ctxMenu button[data-act=away] .sq { background: var(--rose); }
+
+  .hint {
+    margin-top: 14px; text-align: center;
+    font-family: var(--font-mono); font-size: 0.56rem;
+    color: var(--brown-soft); letter-spacing: 0.06em; line-height: 1.7;
+  }
+  footer {
+    margin-top: 26px; text-align: center;
+    font-family: var(--font-mono); font-size: 0.56rem;
+    color: var(--brown-soft); letter-spacing: 0.08em;
+  }
+  footer a { color: var(--ink); text-decoration: none; }
+</style>
+<script src="lofi-engine.js"></script>
+</head>
+<body>
+  <div class="shell">
+    <div class="titlebar">
+      <span class="leds" aria-hidden="true">
+        <span class="led r"></span><span class="led y"></span><span class="led g"></span>
+      </span>
+      <h1>Roomtone</h1>
+      <a href="index.html">&larr; PHANTOM BANDWIDTH</a>
+    </div>
+
+    <div class="stage">
+      <canvas id="room" width="480" height="320" role="img"
+        aria-label="Your room. The light tracks your local time of day. Drag items from Your Things to decorate."></canvas>
+      <div id="firstHint">
+        <b>welcome home.</b>
+        Open the <em>Catalog</em> to send away for things and drag them in from
+        <em>Your Things</em>. <em>Right-click</em> (or <em>long-press</em> on touch)
+        a thing for options. <em>Click the window</em> to cycle the curtains
+        (open → sheer → closed), and flip the <em>wall switch</em> by the door
+        for low, moody light. New mail lands in the <em>Mailbox</em>.
+        Set down the <em>radio</em> (it's already in Your Things) and switch it
+        on for a slow generative <em>lo-fi</em> mix — toggle it in
+        <em>Settings → Ambient sound</em>.
+        <button id="hintClose">got it</button>
+      </div>
+      <div id="awayNote" hidden></div>
+    </div>
+
+    <div class="hud">
+      <div class="panel stamps">
+        <div class="bar"><span>STAMPS</span><span id="accruedNote">&middot;</span></div>
+        <div class="body">
+          <span class="stamp-ico" aria-hidden="true"></span>
+          <div>
+            <div class="stamp-n" id="stampCount">0</div>
+            <div class="stamp-l">1 / HOUR &middot; HELD UP TO 24</div>
+          </div>
+        </div>
+      </div>
+      <div class="actions">
+        <button class="act shop" id="openShop"><span class="sq"></span>Catalog</button>
+        <button class="act" id="openMail"><span class="sq"></span>Mailbox
+          <span class="dot-badge" id="mailBadge" style="display:none">0</span>
+        </button>
+        <button class="act" id="openSettings"><span class="sq"></span>Settings</button>
+        <button class="act" id="openHelp" aria-label="How to play"><span class="sq"></span>Help</button>
+      </div>
+    </div>
+
+    <div class="panel drawer">
+      <div class="bar"><span>YOUR THINGS</span><span id="invCount">0</span></div>
+      <div id="invGrid" class="grid"></div>
+    </div>
+
+    <p class="hint">
+      DRAG A THING FROM &ldquo;YOUR THINGS&rdquo; INTO THE ROOM &middot;
+      DRAG PLACED THINGS TO MOVE &middot; DROP BELOW THE ROOM TO PUT IT BACK
+    </p>
+
+    <footer>made slowly &middot; <a href="index.html">phantombw.xyz</a></footer>
+  </div>
+
+  <!-- catalog -->
+  <div class="scrim" id="shopScrim">
+    <div class="modal">
+      <div class="bar"><span>MAIL-ORDER CATALOG</span><button data-close="shopScrim">CLOSE &times;</button></div>
+      <div class="scroll" id="shopBody"></div>
+    </div>
+  </div>
+
+  <!-- mailbox -->
+  <div class="scrim" id="mailScrim">
+    <div class="modal">
+      <div class="bar"><span>MAILBOX</span><button data-close="mailScrim">CLOSE &times;</button></div>
+      <div class="scroll" id="mailBody"></div>
+    </div>
+  </div>
+
+  <div class="scrim" id="setScrim">
+    <div class="modal">
+      <div class="bar"><span>SETTINGS</span><button data-close="setScrim">CLOSE &times;</button></div>
+      <div class="scroll" id="setBody"></div>
+    </div>
+  </div>
+
+  <img id="ghost" alt="">
+
+  <div id="ctxMenu">
+    <div class="mhdr">THIS THING</div>
+    <button data-act="toggle" id="ctxToggle" style="display:none"><span class="sq"></span>Turn on</button>
+    <button data-act="flip"><span class="sq"></span>Flip</button>
+    <button data-act="front"><span class="sq"></span>Bring forward</button>
+    <button data-act="back"><span class="sq"></span>Send back</button>
+    <button data-act="away"><span class="sq"></span>Put away</button>
+  </div>
+  <div id="ctxRoom">
+    <div class="mhdr">ROOM</div>
+    <button data-r="undo"><span class="sq"></span>Undo</button>
+    <button data-r="redo"><span class="sq"></span>Redo</button>
+    <button data-r="tidy"><span class="sq"></span>Tidy up (all away)</button>
+  </div>
+
+<script>
+"use strict";
+(function () {
+  // ---------- constants ----------
+  var VW = 480, VH = 320;
+  var HOUR = 3600000;
+  var STORE_KEY = "phantombw.roomtone.v1";
+  // set when a "Help me out" link is clicked (here or on the launcher);
+  // shared across pages so support unlocks instant delivery everywhere.
+  var SUPPORT_KEY = "phantombw.supporter";
+
+  // tier → mail-order delay. Trimmed so the wait never reads as a wall:
+  // a common item lands in a couple of minutes, the priciest in a few hours.
+  // Supporters (clicked a Help-me-out link) get instant delivery.
+  var MIN = 60000;
+  var TIER_DELAY_MS = { common: 2*MIN, mid: 30*MIN, premium: 2*3600000, luxury: 4*3600000 };
+  var SUPPORTER_DELAY_MS = 3000;   // a brief "on its way" beat, then it lands
+  function isSupporter(){ return !!(S && S.supporter); }
+  function orderDelay(tier){ return isSupporter() ? SUPPORTER_DELAY_MS : (TIER_DELAY_MS[tier]||30*MIN); }
+  function fmtDelay(ms){
+    if (ms < 3600000) return "~"+Math.round(ms/MIN)+" MIN";
+    var h=ms/3600000; return "~"+(h%1?h.toFixed(1):h)+" H";
+  }
+
+  // ---------- catalog ----------
+  // placement: floor | wall | shelf | view
+  var CATALOG = [
+    // furniture
+    { id:"bed",        name:"Bed",          cat:"Furniture",  tier:"premium", cost:30, place:"floor" },
+    { id:"desk",       name:"Desk",         cat:"Furniture",  tier:"mid",     cost:14, place:"floor" },
+    { id:"chair",      name:"Chair",        cat:"Furniture",  tier:"mid",     cost:10, place:"floor" },
+    { id:"sidetable",  name:"Side Table",   cat:"Furniture",  tier:"mid",     cost:12, place:"floor" },
+    { id:"couch",      name:"Couch",        cat:"Furniture",  tier:"premium", cost:38, place:"floor" },
+    { id:"rug",        name:"Rug",          cat:"Furniture",  tier:"mid",     cost:12, place:"floor" },
+    // lighting
+    { id:"floorlamp",  name:"Floor Lamp",   cat:"Lighting",   tier:"mid",     cost:13, place:"floor" },
+    { id:"desklamp",   name:"Desk Lamp",    cat:"Lighting",   tier:"common",  cost:5,  place:"shelf" },
+    { id:"strlights",  name:"String Lights",cat:"Lighting",   tier:"mid",     cost:12, place:"wall"  },
+    { id:"candle",     name:"Candle",       cat:"Lighting",   tier:"common",  cost:4,  place:"shelf" },
+    // plants
+    { id:"succulent",  name:"Succulent",    cat:"Plants",     tier:"common",  cost:4,  place:"shelf" },
+    { id:"hangvine",   name:"Hanging Vine", cat:"Plants",     tier:"mid",     cost:11, place:"wall"  },
+    { id:"fiddle",     name:"Fiddle Leaf",  cat:"Plants",     tier:"premium", cost:26, place:"floor" },
+    { id:"mossrock",   name:"Mossy Rock",   cat:"Plants",     tier:"common",  cost:5,  place:"shelf" },
+    // decor / wall
+    { id:"poster",     name:"Poster",       cat:"Decor",      tier:"common",  cost:5,  place:"wall"  },
+    { id:"print",      name:"Framed Print", cat:"Decor",      tier:"mid",     cost:10, place:"wall"  },
+    { id:"clock",      name:"Wall Clock",   cat:"Decor",      tier:"mid",     cost:10, place:"wall"  },
+    { id:"mirror",     name:"Mirror",       cat:"Decor",      tier:"mid",     cost:14, place:"wall"  },
+    // shelf clutter
+    { id:"mug",        name:"Mug",          cat:"Shelf",      tier:"common",  cost:3,  place:"shelf" },
+    { id:"books",      name:"Stack of Books",cat:"Shelf",     tier:"common",  cost:5,  place:"shelf" },
+    { id:"radio",      name:"Small Radio",  cat:"Shelf",      tier:"mid",     cost:12, place:"shelf", starter:true },
+    { id:"vinyl",      name:"Vinyl Player", cat:"Shelf",      tier:"premium", cost:28, place:"shelf" },
+    // window views
+    { id:"view_street",name:"View: Quiet Street",   cat:"Window Views", tier:"luxury", cost:60, place:"view" },
+    { id:"view_forest",name:"View: Forest Edge",    cat:"Window Views", tier:"luxury", cost:65, place:"view" },
+    { id:"view_sea",   name:"View: Seaside Cliff",  cat:"Window Views", tier:"luxury", cost:70, place:"view" },
+    { id:"view_roofs", name:"View: City Rooftops",  cat:"Window Views", tier:"luxury", cost:75, place:"view" },
+    // surfaces — flooring & wallpaper (applied, not dragged)
+    { id:"floor_walnut", name:"Walnut Floor",  cat:"Surfaces", tier:"mid",     cost:14, place:"surface" },
+    { id:"floor_ash",    name:"Ashwood Floor", cat:"Surfaces", tier:"mid",     cost:12, place:"surface" },
+    { id:"floor_tile",   name:"Stone Tile",    cat:"Surfaces", tier:"premium", cost:26, place:"surface" },
+    { id:"wall_sage",    name:"Sage Wallpaper",cat:"Surfaces", tier:"mid",     cost:12, place:"surface" },
+    { id:"wall_blush",   name:"Blush Wallpaper",cat:"Surfaces",tier:"mid",     cost:12, place:"surface" },
+    { id:"wall_plain",   name:"Plain Cream Wall",cat:"Surfaces",tier:"common", cost:6,  place:"surface" },
+    { id:"wall_plaid",   name:"Plaid Wallpaper",cat:"Surfaces", tier:"premium", cost:24, place:"surface" }
+  ];
+  // surface style registry (default styles are free / always owned)
+  var SURFACES = {
+    floor_default:{ kind:"floor", base:"#caa978", pat:"planks" },
+    floor_walnut: { kind:"floor", base:"#7d5a42", pat:"planks" },
+    floor_ash:    { kind:"floor", base:"#cdbb98", pat:"planks" },
+    floor_tile:   { kind:"floor", base:"#a9a8a2", pat:"tile"   },
+    wall_default: { kind:"wall",  base:"#e3d3b4", pat:"stripe" },
+    wall_sage:    { kind:"wall",  base:"#bcc7a6", pat:"stripe" },
+    wall_blush:   { kind:"wall",  base:"#e6c6c0", pat:"stripe" },
+    wall_plain:   { kind:"wall",  base:"#e8dcc2", pat:"plain"  },
+    wall_plaid:   { kind:"wall",  base:"#d9c7a6", pat:"plaid"  }
+  };
+  var DEF_WALL="#e3d3b4", DEF_FLOOR="#caa978";   // midday reference tones
+  var BY_ID = {};
+  CATALOG.forEach(function (i) { BY_ID[i.id] = i; });
+  var CAT_ORDER = ["Furniture","Lighting","Plants","Decor","Shelf","Window Views","Surfaces"];
+
+  // ---------- state ----------
+  function freshState() {
+    var now = new Date().toISOString();
+    return {
+      firstVisit: now,
+      lastVisit: now,
+      stamps: 6,                 // a small starting purse
+      ownedItems: [],            // owned but not placed
+      placedItems: {},           // id -> {x,y}
+      activeView: "view_clouds", // free starter (locked decision)
+      pendingOrders: [],         // [{itemId, arrivesAt}]
+      mailWaiting: [],           // delivered, not yet placed (drives the mailbox)
+      gridSnap: false,           // tidy grid placement toggle
+      curtains: "open",          // window curtains: open | sheer | closed
+      roomLight: true,           // ceiling light; off = moody low light
+      supporter: false,          // clicked a Help-me-out link → instant mail
+      activeFloor: "floor_default",
+      activeWall:  "wall_default",
+      itemState: {},             // per-id toggles, e.g. lamp/radio on/off
+      seenHint: false,           // first-visit onboarding shown?
+      settings: { sway:true, sound:false, reduceMotion:false, blackout:false, liveWx:false, accurateDaylight:false }
+    };
+  }
+  var S;
+  function loadState() {
+    try {
+      var raw = localStorage.getItem(STORE_KEY);
+      if (!raw) return freshState();
+      var p = JSON.parse(raw);
+      var f = freshState();
+      // defensive: only adopt well-formed fields
+      return {
+        firstVisit: typeof p.firstVisit === "string" ? p.firstVisit : f.firstVisit,
+        lastVisit:  typeof p.lastVisit  === "string" ? p.lastVisit  : f.lastVisit,
+        stamps:     Number.isFinite(p.stamps) ? Math.max(0, Math.floor(p.stamps)) : f.stamps,
+        ownedItems: Array.isArray(p.ownedItems) ? p.ownedItems.filter(function(x){return BY_ID[x];}) : [],
+        placedItems:(p.placedItems && typeof p.placedItems === "object") ? p.placedItems : {},
+        activeView: BY_ID[p.activeView] || p.activeView === "view_clouds" ? p.activeView : "view_clouds",
+        pendingOrders: Array.isArray(p.pendingOrders) ? p.pendingOrders.filter(function(o){
+          return o && BY_ID[o.itemId] && typeof o.arrivesAt === "string";
+        }) : [],
+        mailWaiting: Array.isArray(p.mailWaiting) ? p.mailWaiting.filter(function(x){return BY_ID[x];}) : [],
+        gridSnap: !!p.gridSnap,
+        curtains: (p.curtains==="closed"||p.curtains==="sheer") ? p.curtains : "open",
+        roomLight: p.roomLight!==false,
+        supporter: !!p.supporter || localStorage.getItem(SUPPORT_KEY)==="1",
+        activeFloor: (typeof p.activeFloor==="string") ? p.activeFloor : "floor_default",
+        activeWall:  (typeof p.activeWall==="string")  ? p.activeWall  : "wall_default",
+        itemState: (p.itemState && typeof p.itemState==="object") ? p.itemState : {},
+        seenHint: !!p.seenHint,
+        settings: {
+          sway:        !p.settings || p.settings.sway!==false,
+          sound:       !!(p.settings && p.settings.sound),
+          reduceMotion:!!(p.settings && p.settings.reduceMotion),
+          blackout:    !!(p.settings && p.settings.blackout),
+          liveWx:      !!(p.settings && p.settings.liveWx),
+          accurateDaylight: !!(p.settings && p.settings.accurateDaylight)
+        }
+      };
+    } catch (e) {
+      return freshState();
+    }
+  }
+  function saveState() {
+    try { localStorage.setItem(STORE_KEY, JSON.stringify(S)); } catch (e) {}
+  }
+
+  // ---------- stamp accrual ----------
+  // Spec: 1 stamp / real hour, cap 24h stored. We carry the sub-hour
+  // remainder forward (lastVisit = now - leftover) so short revisits
+  // don't quietly burn partial progress — within the "don't lose
+  // progress while away" intent of the locked spec.
+  var lastAccrued = 0;
+  function accrue() {
+    var now = Date.now();
+    var last = Date.parse(S.lastVisit);
+    if (!Number.isFinite(last)) last = now;
+    var elapsed = Math.min(now - last, 24 * HOUR);
+    if (elapsed < 0) elapsed = 0;
+    var earned = Math.floor(elapsed / HOUR);
+    if (earned > 0) {
+      S.stamps += earned;
+      var leftover = (now - last) - earned * HOUR;
+      if (leftover > 24 * HOUR) leftover = 0;
+      S.lastVisit = new Date(now - leftover).toISOString();
+      lastAccrued = earned;
+    } else {
+      S.lastVisit = new Date(last).toISOString();
+    }
+  }
+
+  // ---------- orders ----------
+  function processOrders() {
+    var now = Date.now();
+    var still = [];
+    if (!Array.isArray(S.mailWaiting)) S.mailWaiting = [];
+    S.pendingOrders.forEach(function (o) {
+      if (Date.parse(o.arrivesAt) <= now) {
+        if (S.ownedItems.indexOf(o.itemId) === -1 && !S.placedItems[o.itemId]) {
+          S.ownedItems.push(o.itemId);
+        }
+        if (S.mailWaiting.indexOf(o.itemId) === -1 && !S.placedItems[o.itemId]) {
+          S.mailWaiting.push(o.itemId);          // newly delivered → notify mailbox
+        }
+      } else {
+        still.push(o);
+      }
+    });
+    S.pendingOrders = still;
+  }
+  function clearMail(id){
+    if (!Array.isArray(S.mailWaiting)) { S.mailWaiting=[]; return; }
+    var i=S.mailWaiting.indexOf(id); if (i!==-1) S.mailWaiting.splice(i,1);
+  }
+  function styleActive(id){ return id===S.activeWall || id===S.activeFloor; }
+  function isObtained(id) {
+    return S.ownedItems.indexOf(id) !== -1 ||
+           !!S.placedItems[id] ||
+           S.pendingOrders.some(function (o) { return o.itemId === id; }) ||
+           (id === S.activeView) || styleActive(id);
+  }
+  function hasView(id) {
+    return id === "view_clouds" || id === S.activeView ||
+           S.ownedItems.indexOf(id) !== -1 ||
+           S.pendingOrders.some(function (o) { return o.itemId === id; });
+  }
+  function hexRGB(h){ h=cssToHex(h); var n=parseInt(h.slice(1),16); return [(n>>16)&255,(n>>8)&255,n&255]; }
+  function hex2(v){ v=Math.max(0,Math.min(255,Math.round(v))).toString(16); return v.length<2?"0"+v:v; }
+  // a surface style colour, shifted by the current time-of-day ambient
+  function styleColor(styleId, todHex, defHex){
+    var s=SURFACES[styleId]; if(!s) return cssToHex(todHex);
+    var a=hexRGB(s.base), t=hexRGB(todHex), d=hexRGB(defHex);
+    return "#"+hex2(a[0]+t[0]-d[0])+hex2(a[1]+t[1]-d[1])+hex2(a[2]+t[2]-d[2]);
+  }
+
+  // ============================================================
+  //  PIXEL SPRITES  — detailed, outlined, multi-tone shaded pixel
+  //  art (32px+). Built from a small set of shaded primitives so
+  //  every item shares the same dark-outline cozy look. Keyed by
+  //  id; drawSprite is the only entry point (swappable later).
+  // ============================================================
+  function px(c, x, y, w, h, col) { c.fillStyle = col; c.fillRect(Math.round(x), Math.round(y), Math.max(0,Math.round(w)), Math.max(0,Math.round(h))); }
+  function dot(c, x, y, col) { c.fillStyle = col; c.fillRect(x|0, y|0, 1, 1); }
+
+  // shading ramps (dark → light) + shared outline
+  var OL   = "#2a2018";
+  var TERR = { hi:"#e7a766", lt:"#cf8444", md:"#b56a32", sh:"#8e4b22", soil:"#46331f", soilHi:"#5b4329" };
+  var CER  = { hi:"#7f9bbd", lt:"#5a78a0", md:"#445d80", sh:"#33425a" };          // blue ceramic pot
+  var GRN  = { ol:"#21381b", dk:"#3a6029", md:"#558b38", lt:"#74ab53", hi:"#9ccb6e" };
+  var WOOD = { dk:"#4a3a2b", md:"#6d553e", lt:"#8d7053", hi:"#ab8c66" };
+  var CLO  = { dk:"#5f5170", md:"#867199", lt:"#a594b8", hi:"#c2b4d2" };
+  var MET  = { dk:"#33425a", md:"#4f6789", lt:"#7290b3", hi:"#9fb6d2" };
+  var CRM  = { sh:"#d6c8a4", md:"#efe2c2", hi:"#fbf3da" };
+  var GLOW = "#ffe6a6", FLAME = "#f3a35f";
+
+  // a terracotta (or ceramic) pot, side view, outlined + shaded.
+  // returns the soil-surface y so plants can root on it.
+  function pot(c, cx, topY, topW, botW, bodyH, rimH, P) {
+    P = P || TERR;
+    var i, t, w, bx, by;
+    // rim
+    px(c, cx-topW/2-1, topY-1, topW+2, rimH+2, OL);
+    px(c, cx-topW/2, topY, topW, rimH, P.md);
+    px(c, cx-topW/2, topY, topW, 1, P.hi);
+    px(c, cx-topW/2, topY, Math.max(3,topW*0.30), rimH, P.lt);
+    px(c, cx+topW/2-Math.max(3,topW*0.20), topY, Math.max(3,topW*0.20), rimH, P.sh);
+    px(c, cx-topW/2, topY+rimH-1, topW, 1, P.sh);
+    // body (tapered scanlines, outlined edges)
+    for (i=0;i<bodyH;i++){
+      t = i/(bodyH-1);
+      w = Math.round(topW-2 + (botW-(topW-2))*t);
+      bx = Math.round(cx - w/2); by = topY+rimH+i;
+      dot(c, bx-1, by, OL); dot(c, bx+w, by, OL);
+      px(c, bx, by, w, 1, P.md);
+      px(c, bx, by, Math.max(2,Math.round(w*0.30)), 1, P.lt);
+      px(c, bx+w-Math.max(2,Math.round(w*0.22)), by, Math.max(2,Math.round(w*0.22)), 1, P.sh);
+    }
+    px(c, cx-botW/2-1, topY+rimH+bodyH, botW+2, 1, OL);
+    // soil
+    var sw = topW-4;
+    px(c, cx-sw/2, topY+1, sw, 3, P.soil||"#46331f");
+    px(c, cx-sw/2, topY+1, sw, 1, P.soilHi||"#5b4329");
+    return topY+1;
+  }
+
+  // an outlined tapered leaf-blade growing up from (bx,by); lean = px
+  // horizontal drift at the tip. Shaded with a lit edge + highlight.
+  function blade(c, bx, by, h, lean, baseW, opt) {
+    opt = opt||{};
+    var dir = opt.flip ? -1 : 1, i, t, yy, xx, w, lx;
+    for (i=0;i<h;i++){
+      t = i/h; yy = by-i;
+      xx = bx + lean*t*t;
+      w = Math.max(1, Math.round(baseW*(1-t*0.86)));
+      lx = Math.round(xx - w/2);
+      px(c, lx-1, yy, w+2, 1, OL);                 // outline silhouette
+      if (i < h-3) {
+        px(c, lx, yy, w, 1, GRN.md);
+        px(c, dir>0?lx:lx+w-Math.max(1,Math.round(w*0.4)), yy,
+              Math.max(1,Math.round(w*0.4)), 1, GRN.lt);     // lit edge
+        if (w>=4 && t<0.6 && i%3===0) dot(c, lx+(dir>0?1:w-2), yy, GRN.hi);
+        if (w>=3 && t>0.55) px(c, lx, yy, w, 1, GRN.dk);     // tip darker
+      }
+    }
+  }
+
+  // an outlined teardrop leaf centred at (x,y), pointing by ang sign
+  function leaf(c, x, y, w, h, lean) {
+    var i, t, yy, ww, lx;
+    for (i=0;i<h;i++){
+      t=i/(h-1); yy=y+i;
+      ww = Math.round(w * Math.sin(Math.PI*Math.min(0.98,0.10+t*0.9)));
+      lx = Math.round(x - ww/2 + lean*(t-0.5)*2);
+      px(c, lx-1, yy, ww+2, 1, OL);
+      if (ww>0){
+        px(c, lx, yy, ww, 1, GRN.md);
+        px(c, lx, yy, Math.max(1,Math.round(ww*0.42)), 1, GRN.lt);
+        if (t>0.2 && t<0.85) dot(c, Math.round(x+lean*(t-0.5)*2), yy, GRN.dk); // vein
+      }
+    }
+  }
+
+  // a rounded cactus column with ribs + areole speckles
+  function cactusCol(c, x, y, w, h) {
+    var i, t, yy, ww, lx;
+    for (i=0;i<h;i++){
+      yy=y+i; t=i/(h-1);
+      ww = w - (i<2?2:0) - (i>h-3?2:0);          // round the ends
+      lx = x + ((w-ww)>>1);
+      px(c, lx-1, yy, ww+2, 1, OL);
+      px(c, lx, yy, ww, 1, GRN.md);
+      px(c, lx, yy, 2, 1, GRN.lt);
+      px(c, lx+ww-2, yy, 2, 1, GRN.dk);
+      if (i%4===2){ dot(c, lx+2, yy, GRN.dk); dot(c, lx+ww-3, yy, GRN.dk); }
+      if (i%6===3) dot(c, x+(w>>1), yy, GRN.hi);
+    }
+  }
+
+  // outlined box with a top/left bevel highlight + bottom/right shade
+  function panel(c, x, y, w, h, R) {
+    px(c, x-1, y-1, w+2, h+2, OL);
+    px(c, x, y, w, h, R.md);
+    px(c, x, y, w, 1, R.hi); px(c, x, y, 1, h, R.hi);
+    px(c, x, y+h-1, w, 1, R.dk); px(c, x+w-1, y, 1, h, R.dk);
+  }
+
+  var SPRITES = {
+    // ---- furniture ----
+    bed: function (c) {
+      px(c,3,33,50,1,OL);
+      panel(c,2,16,8,20,WOOD);                       // headboard
+      px(c,6,18,52,12,OL);
+      px(c,7,19,50,10,"#cdd3df");                    // mattress
+      px(c,7,19,50,2,"#e7ecf3"); px(c,7,27,50,2,"#aab2c4");
+      px(c,9,15,18,8,OL); px(c,10,16,16,6,"#e7b27e"); px(c,10,16,16,2,"#f4cf9f"); // pillow
+      px(c,6,30,52,4,WOOD.md); px(c,6,30,52,1,WOOD.hi); px(c,6,33,52,1,WOOD.dk);
+      px(c,7,34,4,5,WOOD.dk); px(c,52,34,4,5,WOOD.dk);
+    },
+    desk: function (c) {
+      px(c,1,7,50,6,OL); px(c,2,8,48,4,WOOD.md);
+      px(c,2,8,48,1,WOOD.hi); px(c,2,11,48,1,WOOD.dk);
+      px(c,5,13,7,24,OL); px(c,6,14,5,22,WOOD.md); px(c,6,14,1,22,WOOD.lt);
+      px(c,39,13,7,24,OL); px(c,40,14,5,22,WOOD.md); px(c,40,14,1,22,WOOD.lt);
+      panel(c,11,16,28,9,WOOD); px(c,22,20,7,2,WOOD.dk); // drawer + pull
+    },
+    chair: function (c) {
+      px(c,7,1,5,23,OL); px(c,8,2,3,21,WOOD.md); px(c,8,2,1,21,WOOD.lt);
+      px(c,9,4,15,3,OL); px(c,9,9,15,3,OL);              // back slats
+      px(c,9,5,13,1,WOOD.hi); px(c,9,10,13,1,WOOD.hi);
+      panel(c,6,23,22,6,WOOD);                            // seat
+      px(c,7,29,4,11,OL); px(c,8,30,2,10,WOOD.md);
+      px(c,23,29,4,11,OL); px(c,24,30,2,10,WOOD.md);
+    },
+    sidetable: function (c) {
+      panel(c,3,5,28,6,WOOD);                             // top
+      px(c,6,11,4,24,OL); px(c,7,12,2,22,WOOD.md);
+      px(c,24,11,4,24,OL); px(c,25,12,2,22,WOOD.md);
+      px(c,9,21,16,3,WOOD.dk);                            // stretcher
+    },
+    couch: function (c) {
+      px(c,1,11,62,24,OL);
+      px(c,2,12,60,22,CLO.md);
+      px(c,2,12,12,22,CLO.dk); px(c,50,12,12,22,CLO.dk); // arms
+      px(c,3,13,9,4,CLO.lt); px(c,51,13,9,4,CLO.lt);
+      px(c,15,14,16,9,CLO.lt); px(c,33,14,16,9,CLO.lt);  // cushions
+      px(c,15,14,16,2,CLO.hi); px(c,33,14,16,2,CLO.hi);
+      px(c,23,23,1,11,CLO.dk);
+      px(c,6,34,5,5,WOOD.dk); px(c,53,34,5,5,WOOD.dk);
+    },
+    rug: function (c) {
+      px(c,1,3,70,18,OL);
+      px(c,2,4,68,16,"#bc7f78"); px(c,2,4,68,3,"#cf9189");
+      px(c,6,7,60,10,"#d8a89c"); px(c,10,9,52,6,"#a96f6a");
+      px(c,14,11,44,2,"#e7c4b4");
+      for (var i=4;i<70;i+=7) px(c,i,4,2,2,"#8f5a56");
+      for (i=6;i<68;i+=7) px(c,i,17,2,2,"#8f5a56");
+    },
+    // ---- lighting ----
+    floorlamp: function (c) {
+      px(c,5,1,24,3,OL); px(c,6,4,22,10,OL);
+      px(c,7,5,20,8,"#efd9a4"); px(c,7,5,20,2,"#fbeec4");
+      px(c,9,13,16,3,GLOW);
+      px(c,15,14,4,30,OL); px(c,16,15,2,29,WOOD.md);
+      px(c,9,44,16,5,OL); px(c,10,45,14,3,WOOD.md); px(c,10,45,14,1,WOOD.hi);
+    },
+    desklamp: function (c) {
+      px(c,4,26,26,5,OL); px(c,5,27,24,3,MET.md); px(c,5,27,24,1,MET.lt);
+      px(c,15,12,4,16,OL); px(c,16,13,2,15,MET.md);
+      px(c,8,4,16,3,OL); px(c,8,7,4,7,OL); px(c,9,7,14,2,MET.md);
+      px(c,9,5,14,2,MET.lt);
+      px(c,12,10,9,3,GLOW);
+    },
+    strlights: function (c) {
+      px(c,0,3,64,2,"#2f261c");
+      for (var i=4;i<62;i+=11){
+        var dy = (i%22===4)?6:9;
+        px(c,i,5,2,dy-5,"#2f261c");
+        px(c,i-2,dy,5,5,OL);
+        px(c,i-1,dy+1,3,3,(i%22===4)?"#f7c768":"#ef9f63");
+        dot(c,i,dy+1,"#fde7ad");
+      }
+    },
+    candle: function (c) {
+      px(c,6,12,14,22,OL);
+      px(c,7,13,12,20,CRM.md); px(c,7,13,4,20,CRM.hi); px(c,16,13,3,20,CRM.sh);
+      px(c,7,13,12,2,CRM.hi);
+      px(c,12,6,2,7,"#2f261c");                    // wick
+      px(c,10,0,6,7,OL); px(c,11,1,4,5,FLAME);
+      px(c,12,1,2,3,"#fde7ad");
+      px(c,9,16,3,3,GLOW);
+    },
+    // ---- plants (reference style: outlined, shaded) ----
+    succulent: function (c) {
+      var s = pot(c, 16, 26, 22, 18, 12, 5, TERR);
+      cactusCol(c, 8, s-19, 8, 19);
+      cactusCol(c, 17, s-14, 7, 14);
+      dot(c,11,s-17,GRN.hi); dot(c,20,s-11,GRN.hi);
+    },
+    hangvine: function (c) {
+      px(c,8,1,2,5,OL); px(c,24,1,2,5,OL);            // hanger cords
+      pot(c, 17, 6, 22, 16, 11, 4, TERR);
+      blade(c,14,21,8,-3,5,{});
+      // trailing strands with leaves
+      var sx=[12,18,24], len=[20,26,17];
+      for (var s=0;s<3;s++){
+        for (var i=0;i<len[s];i++){
+          var yy=21+i, xx=sx[s]+Math.round(Math.sin(i*0.5+s)*1.5);
+          dot(c,xx,yy,OL); dot(c,xx+1,yy,GRN.dk);
+          if (i%4===2){ leaf(c,xx-3,yy-1,7,5,0); leaf(c,xx+4,yy-1,7,5,0); }
+        }
+      }
+    },
+    fiddle: function (c) {
+      var s = pot(c, 20, 38, 26, 20, 13, 5, TERR);
+      px(c,19,14,3,s-14,OL); px(c,20,14,1,s-14,GRN.dk);  // trunk
+      leaf(c, 13, 4, 16, 18, -2);
+      leaf(c, 28, 6, 15, 17,  2);
+      leaf(c, 20, 0, 15, 17,  0);
+      leaf(c, 11, 17, 13, 14, -2);
+      leaf(c, 30, 19, 12, 13,  2);
+    },
+    mossrock: function (c) {
+      px(c,3,15,30,1,OL);
+      px(c,4,12,28,12,OL);
+      px(c,5,13,26,10,"#8d8a82"); px(c,5,13,26,3,"#a8a59c");
+      px(c,7,21,22,2,"#6c6a63"); dot(c,11,17,"#b7b4ab"); dot(c,22,16,"#b7b4ab");
+      blade(c,11,15,12,-3,4,{}); blade(c,15,15,15,0,4,{});
+      blade(c,19,15,13,3,4,{}); blade(c,24,16,10,4,3,{});
+      blade(c,8,16,9,-4,3,{flip:true});
+    },
+    // ---- decor / wall ----
+    poster: function (c) {
+      px(c,0,0,32,40,OL); px(c,1,1,30,38,CRM.md);
+      px(c,3,3,26,34,"#cf8d83"); px(c,3,3,26,10,"#dd9f95");
+      px(c,7,20,18,14,GRN.md); px(c,7,20,18,3,GRN.lt);
+      px(c,12,9,8,9,"#e6b483"); dot(c,15,12,"#fbe2bf");      // sun
+    },
+    print: function (c) {
+      panel(c,0,0,40,32,WOOD);
+      px(c,4,4,32,24,OL); px(c,5,5,30,22,"#dde6ee");
+      px(c,5,18,30,9,GRN.md); px(c,5,18,30,2,GRN.lt);
+      px(c,9,9,7,7,"#e6b483"); px(c,22,8,8,9,"#cf8d83");
+      px(c,5,5,30,3,"#eef3f8");
+    },
+    clock: function (c) {
+      px(c,3,1,28,2,OL); px(c,1,3,32,28,OL);
+      px(c,2,4,30,26,"#efe2c2"); px(c,2,4,30,3,"#fbf3da");
+      px(c,5,7,24,20,OL); px(c,6,8,22,18,"#f7efd7");
+      for (var a=0;a<12;a++){ var ang=a*Math.PI/6;
+        dot(c, Math.round(17+Math.sin(ang)*9), Math.round(17-Math.cos(ang)*8), OL); }
+      px(c,16,11,2,7,OL); px(c,17,16,6,2,OL); dot(c,17,17,"#b56a32");
+    },
+    mirror: function (c) {
+      px(c,1,0,28,2,OL); px(c,1,40,28,2,OL);
+      panel(c,2,1,26,40,WOOD);
+      px(c,6,5,18,32,OL); px(c,7,6,16,30,"#c9d4dd");
+      px(c,9,8,6,20,"#e6eef4"); px(c,7,6,16,3,"#eef4f8");
+      px(c,7,30,16,6,"#b3bfca");
+    },
+    // ---- shelf clutter ----
+    mug: function (c) {
+      px(c,4,8,18,20,OL);
+      px(c,5,9,16,18,"#cf8d83"); px(c,5,9,5,18,"#dfa79d"); px(c,17,9,4,18,"#b5746c");
+      px(c,5,9,16,3,"#e7bcb1");
+      px(c,22,12,6,10,OL); px(c,23,13,3,8,"#cf8d83"); // handle
+      px(c,7,5,12,4,OL); px(c,8,6,10,2,"#caa07a");    // drink/steam base
+      dot(c,11,2,CRM.hi); dot(c,14,0,CRM.sh);
+    },
+    books: function (c) {
+      px(c,1,19,34,9,OL); px(c,2,20,32,7,"#9c7c5e");
+      px(c,2,20,32,2,"#b59370"); px(c,4,22,3,5,"#3a2e24");
+      px(c,3,11,30,8,OL); px(c,4,12,28,6,"#6f8b7c");
+      px(c,4,12,28,2,"#8aa597"); px(c,28,13,2,4,"#3a2e24");
+      px(c,5,3,26,8,OL); px(c,6,4,24,6,"#b06a4f");
+      px(c,6,4,24,2,"#cf8a6b"); px(c,8,5,2,4,"#3a2e24");
+    },
+    radio: function (c) {
+      px(c,1,7,38,24,OL); px(c,2,8,36,22,WOOD.md);
+      px(c,2,8,36,3,WOOD.hi); px(c,2,28,36,2,WOOD.dk);
+      px(c,4,11,17,15,OL); px(c,5,12,15,13,"#2f3a4a");
+      for (var g=13;g<24;g+=3) px(c,6,g,13,1,MET.lt);
+      px(c,24,12,11,11,OL); px(c,25,13,9,9,"#cdb892");
+      dot(c,29,17,"#3a2e24"); px(c,24,25,11,3,"#3a2e24");
+      dot(c,26,26,"#e6b483"); dot(c,32,26,"#e6b483");
+    },
+    vinyl: function (c) {
+      px(c,1,14,42,18,OL); px(c,2,15,40,16,WOOD.md);
+      px(c,2,15,40,2,WOOD.hi); px(c,2,29,40,2,WOOD.dk);
+      px(c,5,3,30,13,OL); px(c,6,4,28,11,"#2b2533");
+      px(c,13,6,14,7,OL); px(c,14,7,12,5,"#21202a");  // record
+      dot(c,19,9,"#cf8d83"); dot(c,20,9,"#f3ead2");
+      px(c,30,17,9,9,OL); px(c,31,18,7,7,"#e6b483"); dot(c,34,21,"#8e5a30"); // speaker
+      px(c,8,5,3,1,MET.lt);                            // tonearm
+    }
+  };
+
+  function spriteBox(id) {
+    var b = {
+      bed:[60,40],desk:[52,40],chair:[34,42],sidetable:[34,38],couch:[64,40],rug:[72,24],
+      floorlamp:[34,50],desklamp:[34,32],strlights:[64,20],candle:[26,36],
+      succulent:[32,40],hangvine:[34,48],fiddle:[40,52],mossrock:[36,32],
+      poster:[32,40],print:[40,34],clock:[34,34],mirror:[32,42],
+      mug:[32,30],books:[36,30],radio:[40,32],vinyl:[44,34]
+    };
+    return b[id] || [32,32];
+  }
+  // per-item base scale so things read at believable relative sizes
+  // (a mug is tiny next to a couch). Multiplies the placement scale.
+  var ITEM_K = {
+    couch:1.00, bed:1.00, desk:0.95, sidetable:0.80, chair:0.86, rug:1.05,
+    floorlamp:0.95, fiddle:1.00, hangvine:0.80, strlights:0.85,
+    poster:0.78, print:0.80, clock:0.60, mirror:0.85,
+    mug:0.42, books:0.55, radio:0.52, vinyl:0.64, candle:0.46,
+    succulent:0.52, mossrock:0.52, desklamp:0.60
+  };
+  function kof(id){ return ITEM_K[id]||1; }
+  function drawScaleOf(id){ return worldS(id)*kof(id); }   // resolved render scale
+  function drawSprite(c, id, x, y, flip, scale) {
+    var fn = SPRITES[id]; if (!fn) return;
+    scale = scale || 1;
+    c.save(); c.translate(Math.round(x), Math.round(y));
+    if (scale !== 1) c.scale(scale, scale);
+    if (flip){ c.translate(spriteBox(id)[0], 0); c.scale(-1, 1); }
+    fn(c); c.restore();
+  }
+
+  // ---------- window views (drawn inside the window rect) ----------
+  // soft, billowy cloud — overlapping FEATHERED puffs (radial-gradient
+  // falloff) so the silhouette stays soft even when the low-res canvas is
+  // upscaled with image-rendering:pixelated. Seeded so each is unique.
+  function softCloud(c, cx, cy, sc, tod, night, seed, al) {
+    al = (al==null) ? 1 : al;
+    function rgb(col){
+      col = cssToHex(col).replace("#","");
+      if (col.length===3) col = col.replace(/(.)/g,"$1$1");
+      return parseInt(col.substr(0,2),16)+","+
+             parseInt(col.substr(2,2),16)+","+
+             parseInt(col.substr(4,2),16);
+    }
+    var bodyC = night ? rgb(shade(cssToHex(tod.sky), 26)) : "244,238,221";
+    var shC   = night ? rgb(shade(cssToHex(tod.sky), 13)) : "214,206,184";
+    var hiC   = night ? rgb(shade(cssToHex(tod.sky), 42)) : "255,250,239";
+    var s=(seed||1)>>>0; function rr(){ s=(s*1103515245+12345)&0x7fffffff; return s/0x7fffffff; }
+    var R=Math.max(5, 6.5*sc), i, p;
+    // a row of base puffs (soft flattish underside) + a few taller crowns
+    var n=4+Math.floor(rr()*3), puffs=[];
+    for (i=0;i<n;i++)
+      puffs.push({ x:i*R*0.74, y:-(rr()*R*0.34), r:R*(0.74+rr()*0.42) });
+    var midX=(n-1)*R*0.74*0.5;
+    puffs.push({ x:midX-R*0.55, y:-R*0.74, r:R*(0.92+rr()*0.34) });
+    puffs.push({ x:midX+R*0.32, y:-R*0.56, r:R*(0.80+rr()*0.30) });
+    puffs.push({ x:midX-R*0.04, y:-R*1.02, r:R*(0.58+rr()*0.26) });
+    c.save(); c.globalAlpha=al;
+    function pass(ox, oy, col, rs, core){
+      for (i=0;i<puffs.length;i++){ p=puffs[i];
+        var X=cx+p.x+ox, Y=cy+p.y+oy, Rr=p.r*rs;
+        var g=c.createRadialGradient(X,Y,Rr*0.08,X,Y,Rr);
+        g.addColorStop(0,    "rgba("+col+",1)");
+        g.addColorStop(core, "rgba("+col+",1)");
+        g.addColorStop(1,    "rgba("+col+",0)");
+        c.fillStyle=g;
+        c.beginPath(); c.arc(X,Y,Rr,0,6.2832); c.fill();
+      }
+    }
+    pass(0, R*0.30, shC,  1.07, 0.55);   // soft underside / shadow
+    pass(0, 0,      bodyC, 1.00, 0.66);  // body
+    for (i=0;i<puffs.length;i++){ p=puffs[i];   // sunlit upper-left tops
+      var X=cx+p.x-p.r*0.16, Y=cy+p.y-p.r*0.24, Rr=p.r*0.62;
+      var g=c.createRadialGradient(X,Y,Rr*0.05,X,Y,Rr);
+      g.addColorStop(0,   "rgba("+hiC+",0.95)");
+      g.addColorStop(0.5, "rgba("+hiC+",0.5)");
+      g.addColorStop(1,   "rgba("+hiC+",0)");
+      c.fillStyle=g;
+      c.beginPath(); c.arc(X,Y,Rr,0,6.2832); c.fill();
+    }
+    c.restore();
+  }
+  function drawView(c, id, x, y, w, h, tod) {
+    c.save();
+    c.beginPath(); c.rect(x, y, w, h); c.clip();
+    var night = tod.k < -8;
+    var wx = weatherNow();
+    var rmo = S.settings && S.settings.reduceMotion;
+    var skyHex = cssToHex(tod.sky);
+    if (wx==="rain")   skyHex = shade(skyHex,-26);
+    if (wx==="cloudy") skyHex = shade(skyHex,-12);
+    var i, t, tx;
+    // banded gradient sky (darker at top, soft glow at the horizon)
+    var bands = 9;
+    for (i=0;i<bands;i++){
+      t=i/(bands-1);
+      px(c, x, y+Math.floor(h*i/bands), w, Math.ceil(h/bands)+1,
+         shade(skyHex, Math.round(lerp(-16, 18, t))));
+    }
+    // sun / moon track across the window with the real time of day
+    var now=new Date(), hr=now.getHours()+now.getMinutes()/60;
+    var dayF=clamp((hr-5)/16, 0, 1);                 // 05:00 → 21:00 across sky
+    var ox=x+w*(0.10+0.70*dayF);
+    var oy=y+h*(0.46-0.34*Math.sin(Math.PI*dayF));   // arc, highest at midday
+    // slow cloud drift; each cloud has its own speed for parallax
+    var drift=rmo ? 0 : Date.now()*0.0000085;   // gentle, slow drift
+    function cloudX(frac, sp){
+      var span=w+80, v=((frac*span) + drift*sp*span) % span;
+      if (v<0) v+=span; return x-40+v;
+    }
+    if (night){
+      var seed=20260516;
+      function rnd(){ seed=(seed*1103515245+12345)&0x7fffffff; return seed/0x7fffffff; }
+      var stars = wx==="clear" ? 46 : (wx==="cloudy" ? 18 : 6);
+      var tw = rmo ? 0 : Date.now()*0.004;
+      for (var s=0;s<stars;s++){
+        var stx=x+rnd()*w, sty=y+rnd()*h*0.62, ph=rnd()*6.28, br=rnd();
+        var fl = 0.55 + 0.45*Math.sin(tw + ph);       // twinkle
+        c.globalAlpha = 0.45 + 0.55*fl;
+        var col = br>0.85 ? "#fff7da" : (br>0.55 ? "#f3ead2" : shade(skyHex,44));
+        dot(c, stx, sty, col);
+        if (br>0.93){ dot(c,stx+1,sty,col); dot(c,stx,sty+1,col); }  // brighter ones
+      }
+      c.globalAlpha=1;
+      px(c, ox-3, oy-3, 16,16, shade(skyHex,16));
+      px(c, ox, oy, 11,11, tod.orb);
+      px(c, ox+5, oy+1, 6,9, shade(cssToHex(tod.orb),-20));
+    } else {
+      px(c, ox-4, oy-4, 18,18, shade(skyHex,24));
+      px(c, ox-2, oy-2, 14,14, shade(skyHex,40));
+      px(c, ox, oy, 10,10, tod.orb);
+      dot(c, ox+2, oy+2, "#fff6df");
+    }
+    if (id === "view_clouds") {
+      var tms=Date.now();
+      var CL=[ {f:0.06,y:0.26,sc:1.05,sp:0.55,sd:11,a:0.96},
+               {f:0.34,y:0.50,sc:1.55,sp:0.34,sd:27,a:0.82},
+               {f:0.58,y:0.16,sc:0.70,sp:0.78,sd:5, a:0.66},
+               {f:0.80,y:0.62,sc:1.20,sp:0.46,sd:41,a:0.90},
+               {f:0.20,y:0.74,sc:0.85,sp:0.62,sd:63,a:0.55} ];
+      CL.forEach(function(cl){
+        var by=y+h*cl.y + Math.sin(tms*0.00035 + cl.sd)*2.4;
+        softCloud(c, cloudX(cl.f, cl.sp), by, cl.sc, tod, night, cl.sd, cl.a);
+      });
+      px(c, x, y+h-7, w, 7, shade(skyHex, night? -4 : 26));
+    } else if (id === "view_street") {
+      px(c,x,y+h*0.62,w,h*0.38, shade("#6f6457",tod.k));
+      px(c,x+w*0.08,y+h*0.30,w*0.24,h*0.34, shade("#7a6f80",tod.k));
+      px(c,x+w*0.50,y+h*0.24,w*0.26,h*0.42, shade("#86707a",tod.k));
+      px(c,x+w*0.33,y+h*0.40,w*0.17,h*0.24, shade("#6d5f6a",tod.k));
+      for (i=0;i<5;i++) px(c,x+w*(0.12+i*0.13),y+h*(0.34+(i%2)*0.08),4,4, night?"#f2c887":shade("#9a8f86",tod.k));
+      px(c,x+w*0.42,y+h*0.56,3,h*0.24, shade("#5c4a3a",tod.k));
+      dot(c,x+w*0.435,y+h*0.55,"#f2c887");
+      softCloud(c,cloudX(0.20,0.7),y+h*0.13,0.7,tod,night);
+    } else if (id === "view_forest") {
+      px(c,x,y+h*0.60,w,h*0.40, shade("#52663c",tod.k));
+      for (i=0;i<7;i++){ tx=x+4+i*(w/7);
+        px(c,tx+4,y+h*0.30,4,h*0.40, shade("#3a2e24",tod.k));
+        px(c,tx-4,y+h*0.14,19,h*0.30, shade("#3f5530",tod.k));
+        px(c,tx-1,y+h*0.09,12,h*0.16, shade("#4f6a3c",tod.k));
+      }
+      px(c,x,y+h*0.60,w,3, shade("#647a44",tod.k));
+    } else if (id === "view_sea") {
+      px(c,x,y+h*0.52,w,h*0.30, shade("#3f7f96",tod.k));
+      for (i=0;i<6;i++) px(c,x,y+h*0.55+i*4,w,1, shade("#cfe4ef",tod.k-i*5));
+      px(c,x,y+h*0.80,w,h*0.20, shade("#7d6a74",tod.k));
+      px(c,x,y+h*0.80,w,3, shade("#8f7c86",tod.k));
+      softCloud(c,cloudX(0.28,0.8),y+h*0.16,0.9,tod,night);
+    } else if (id === "view_roofs") {
+      px(c,x,y+h*0.56,w,h*0.44, shade("#574652",tod.k));
+      px(c,x+w*0.04,y+h*0.36,w*0.22,h*0.30, shade("#473a46",tod.k));
+      px(c,x+w*0.34,y+h*0.26,w*0.24,h*0.42, shade("#52424f",tod.k));
+      px(c,x+w*0.64,y+h*0.38,w*0.26,h*0.30, shade("#473a46",tod.k));
+      for (i=0;i<6;i++) px(c,x+w*(0.08+i*0.14),y+h*(0.34+(i%3)*0.07),3,3, night?"#f2c887":shade("#9a8d84",tod.k));
+    } else {
+      softCloud(c, cloudX(0.3,1.0), y+h*0.4, 1.0, tod, night);
+    }
+    // overcast adds a couple of drifting grey clouds over any view
+    if (wx==="cloudy"){
+      softCloud(c, cloudX(0.30,0.4), y+h*0.22, 1.2, tod, night, 777, 0.8);
+      softCloud(c, cloudX(0.68,0.55),y+h*0.40, 1.0, tod, night, 313, 0.7);
+    }
+    // rain on the glass
+    if (wx==="rain"){
+      var rt = rmo ? 0 : Date.now()*0.22;
+      c.strokeStyle="rgba(207,224,239,0.40)"; c.lineWidth=1;
+      c.beginPath();
+      for (i=0;i<46;i++){
+        var rx=((i*53 + (rmo?0:(rt+ i*7)))% (w+20)) + x-10;
+        var ry=((i*71 + (rmo?0:rt*1.7))% (h+16)) + y-8;
+        c.moveTo(rx, ry); c.lineTo(rx-2, ry+7);
+      }
+      c.stroke();
+      // a few clinging droplets
+      c.fillStyle="rgba(220,232,244,0.5)";
+      for (i=0;i<10;i++){
+        var dxp=x + ((i*97)%(w-6))+3, dyp=y + ((i*131)%(h-10))+4;
+        c.fillRect(dxp,dyp,2,3); c.fillRect(dxp,dyp+3,1,2);
+      }
+    }
+    // a single bird occasionally drifts past — rare, quiet, daytime only
+    if (!rmo && !night && wx!=="rain"){
+      if (!bird && Math.random() < 0.00016){
+        var ld = Math.random()<0.5;
+        bird = { x: ld ? x-8 : x+w+8, dir: ld?1:-1,
+                 y: y + h*(0.12 + Math.random()*0.30),
+                 v: 0.45 + Math.random()*0.35, t: 0 };
+      }
+      if (bird){
+        bird.x += bird.dir*bird.v; bird.t += 0.22;
+        var bbx=Math.round(bird.x), bby=Math.round(bird.y + Math.sin(bird.t*0.5)*1.6);
+        var up = Math.sin(bird.t) > 0;
+        c.fillStyle="rgba(58,50,64,0.5)";
+        c.fillRect(bbx, bby, 2, 2);                       // body
+        c.fillRect(bbx-3, bby+(up?-2:1), 3, 1);           // wing
+        c.fillRect(bbx+2, bby+(up?-2:1), 3, 1);           // wing
+        if (bird.x < x-14 || bird.x > x+w+14) bird=null;
+      }
+    }
+    c.restore();
+  }
+  function shade(hex, amt) {
+    var n = parseInt(hex.slice(1),16);
+    var r=Math.max(0,Math.min(255,((n>>16)&255)+amt));
+    var g=Math.max(0,Math.min(255,((n>>8)&255)+amt));
+    var b=Math.max(0,Math.min(255,(n&255)+amt));
+    return "rgb("+r+","+g+","+b+")";
+  }
+
+  // ---------- time of day ----------
+  // 5 keyframes; smooth interpolation between the surrounding two.
+  var TOD_KEYS = [
+    { h:4,  sky:"#39406b", wall:"#3b3550", floor:"#322c3e", overlay:"rgba(40,40,90,0.34)", orb:"#cfd4e8", lit:"#f2c887", k:-26 },
+    { h:8,  sky:"#bcd0e6", wall:"#cdbfa6", floor:"#a98c6e", overlay:"rgba(255,228,180,0.12)", orb:"#fbe7c2", lit:"#f0c887", k:6 },
+    { h:13, sky:"#cfe2ef", wall:"#e3d3b4", floor:"#caa978", overlay:"rgba(255,250,235,0.05)", orb:"#fff6df", lit:"#f3d090", k:14 },
+    { h:18, sky:"#e9b07e", wall:"#d8a877", floor:"#a9805a", overlay:"rgba(232,150,110,0.20)", orb:"#ffe2b0", lit:"#ffcaa0", k:0 },
+    { h:22, sky:"#2f3650", wall:"#332e44", floor:"#2b2636", overlay:"rgba(36,34,74,0.38)", orb:"#e6e2d0", lit:"#f2c887", k:-22 }
+  ];
+  function lerp(a,b,t){ return a+(b-a)*t; }
+  function lerpColor(c1,c2,t) {
+    function rgb(s){ if(s[0]==="#"){var n=parseInt(s.slice(1),16);return[(n>>16)&255,(n>>8)&255,n&255,1];}
+      var m=s.match(/[\d.]+/g);return[+m[0],+m[1],+m[2],m[3]!==undefined?+m[3]:1]; }
+    var a=rgb(c1), b=rgb(c2);
+    return "rgba("+Math.round(lerp(a[0],b[0],t))+","+Math.round(lerp(a[1],b[1],t))+","+
+      Math.round(lerp(a[2],b[2],t))+","+lerp(a[3],b[3],t).toFixed(3)+")";
+  }
+  // ---------- live weather (opt-in; api.weather.gov, US only) ----------
+  // Off by default. When the Settings toggle is on we ask the browser for
+  // location ONCE, send only coarse (2-decimal) lat/lon to api.weather.gov,
+  // cache the result, and fall back to the deterministic sim if the user
+  // denies / is outside the US / is offline. Nothing else leaves the page.
+  var WX_KEY="phantombw.wx", WX_TTL=30*60000, liveWxCond=null, wxBusy=false;
+  function mapWx(txt, pop){
+    txt=(txt||"").toLowerCase();
+    if (/thunder|rain|shower|drizzle|sleet/.test(txt)) return "rain";
+    if (/snow|flurr|wintry|cloud|overcast|fog|haze|mist/.test(txt)) return "cloudy";
+    if (/sun|clear|fair/.test(txt)) return "clear";
+    return (pop!=null && pop>=55) ? "rain" : "clear";
+  }
+  function loadWxCache(){
+    try { var c=JSON.parse(localStorage.getItem(WX_KEY)||"null");
+      if (c && (Date.now()-c.ts) < WX_TTL && typeof c.cond==="string") return c; } catch(e){}
+    return null;
+  }
+  function refreshWeather(force){
+    if (!(S.settings && S.settings.liveWx)) { liveWxCond=null; return; }
+    var cached=loadWxCache();
+    if (cached && !force){ liveWxCond=cached.cond; return; }
+    if (wxBusy || !navigator.geolocation) return;
+    wxBusy=true;
+    navigator.geolocation.getCurrentPosition(function(pos){
+      var la=pos.coords.latitude.toFixed(2), lo=pos.coords.longitude.toFixed(2);
+      cacheGeo(+la,+lo);                       // reuse for accurate daylight
+      fetch("https://api.weather.gov/points/"+la+","+lo, {headers:{Accept:"application/geo+json"}})
+        .then(function(r){ if(!r.ok) throw 0; return r.json(); })
+        .then(function(j){ var u=j.properties&&j.properties.forecastHourly;
+          if(!u) throw 0; return fetch(u,{headers:{Accept:"application/geo+json"}}); })
+        .then(function(r){ if(!r.ok) throw 0; return r.json(); })
+        .then(function(j){
+          var p=j.properties&&j.properties.periods&&j.properties.periods[0]; if(!p) throw 0;
+          var pop=p.probabilityOfPrecipitation&&p.probabilityOfPrecipitation.value;
+          liveWxCond=mapWx(p.shortForecast, pop);
+          try{ localStorage.setItem(WX_KEY, JSON.stringify({cond:liveWxCond, ts:Date.now()})); }catch(e){}
+        })
+        .catch(function(){ liveWxCond=null; })          // non-US / offline → sim
+        .then(function(){ wxBusy=false; });
+    }, function(){ wxBusy=false; liveWxCond=null; },     // permission denied → sim
+       { timeout:10000, maximumAge:30*60000 });
+  }
+
+  // gentle weather: mostly clear, sometimes overcast/rain. Deterministic
+  // per (day, ~3h block) so it's stable but changes through the days.
+  function weatherNow(){
+    if (S.settings && S.settings.liveWx && liveWxCond) return liveWxCond;
+    var d=new Date();
+    var doy=Math.floor((d - new Date(d.getFullYear(),0,0))/86400000);
+    var blk=Math.floor((d.getHours())/3);
+    var s=(d.getFullYear()*131 + doy*17 + blk*7)>>>0;
+    s=(s*1103515245+12345)&0x7fffffff; var r=s/0x7fffffff;
+    if (r<0.16) return "rain";
+    if (r<0.40) return "cloudy";
+    return "clear";
+  }
+  // ---------- daylight: anchor lighting to the real sun, not fixed hours ----
+  // Coarse home location (1-2 decimals, cached ~6mo, never sent anywhere
+  // except — only with Live Weather on — to api.weather.gov). Populated by
+  // either the daylight opt-in or, opportunistically, the weather lookup.
+  var GEO_KEY="phantombw.geo", GEO_TTL=180*86400000, geoCoords=null, dlBusy=false;
+  (function(){ try{ var c=JSON.parse(localStorage.getItem(GEO_KEY)||"null");
+    if(c && typeof c.lat==="number" && (Date.now()-c.ts)<GEO_TTL)
+      geoCoords={lat:c.lat,lon:c.lon}; }catch(e){} })();
+  function cacheGeo(lat,lon){ geoCoords={lat:lat,lon:lon};
+    try{ localStorage.setItem(GEO_KEY, JSON.stringify({lat:lat,lon:lon,ts:Date.now()})); }catch(e){} }
+  function ensureDaylight(){
+    if (!(S.settings && S.settings.accurateDaylight)) return;
+    if (geoCoords || dlBusy || !navigator.geolocation) return;
+    dlBusy=true;
+    navigator.geolocation.getCurrentPosition(function(pos){
+      cacheGeo(+pos.coords.latitude.toFixed(2), +pos.coords.longitude.toFixed(2));
+      dlBusy=false;
+    }, function(){ dlBusy=false; }, { timeout:10000, maximumAge:180*86400000 });
+  }
+  // Sunrise / solar-noon / sunset in local decimal hours. With a known
+  // location it's exact for the user's date+place; without one it falls back
+  // to a mid-latitude (37°) model so day length still swings with the season.
+  function solarAnchors(d){
+    var real = !!(S.settings && S.settings.accurateDaylight && geoCoords);
+    var lat = real ? geoCoords.lat : 37;
+    var doy = Math.floor((d - new Date(d.getFullYear(),0,0))/86400000);
+    var decl = 23.44 * Math.sin(2*Math.PI/365*(doy-81));      // ° declination
+    var R = Math.PI/180;
+    var cosH = -Math.tan(lat*R)*Math.tan(decl*R);
+    cosH = Math.max(-1, Math.min(1, cosH));
+    var halfDay = Math.acos(cosH)/R/15;                        // noon→sunset (h)
+    var noon = 12;
+    if (real){
+      var offH = -d.getTimezoneOffset()/60;                    // local UTC offset
+      noon = 12 - (geoCoords.lon - 15*offH)/15;                // longitude-in-tz
+    }
+    return { sr: noon-halfDay, ss: noon+halfDay, nn: noon };
+  }
+  function todNow() {
+    var d = new Date();
+    var hr = d.getHours() + d.getMinutes()/60;
+    var sa = solarAnchors(d), P = TOD_KEYS;
+    // tuned palette keyframes remapped onto today's real solar events:
+    // pre-dawn · post-sunrise · solar noon · golden(pre-sunset) · post-dusk
+    var keys = [
+      { h: sa.sr-1.6, v:P[0] }, { h: sa.sr+0.7, v:P[1] },
+      { h: sa.nn,     v:P[2] }, { h: sa.ss-0.7, v:P[3] },
+      { h: sa.ss+1.0, v:P[4] }
+    ];
+    var day = sa.ss - sa.sr, ordered = true;
+    for (var j=0;j<keys.length-1;j++) if (!(keys[j].h < keys[j+1].h)) ordered=false;
+    if (!ordered || day < 1.5 || day > 22.5)                  // polar / degenerate
+      keys = [ {h:4,v:P[0]},{h:8,v:P[1]},{h:13,v:P[2]},{h:18,v:P[3]},{h:22,v:P[4]} ];
+    var a = keys[keys.length-1].v, b = keys[0].v, span;
+    for (var i=0;i<keys.length;i++){
+      var lo=keys[i].h, hi=keys[(i+1)%keys.length].h; if (hi<=lo) hi+=24;
+      var t=hr; if (t<lo) t+=24;
+      if (t>=lo && t<hi){ a=keys[i].v; b=keys[(i+1)%keys.length].v; span=(t-lo)/(hi-lo); break; }
+    }
+    if (span===undefined) span=0;
+    return {
+      sky: lerpColor(a.sky,b.sky,span),
+      wall: lerpColor(a.wall,b.wall,span),
+      floor: lerpColor(a.floor,b.floor,span),
+      overlay: lerpColor(a.overlay,b.overlay,span),
+      orb: lerpColor(a.orb,b.orb,span),
+      lit: lerpColor(a.lit,b.lit,span),
+      k: Math.round(lerp(a.k,b.k,span))
+    };
+  }
+
+  // ---------- room geometry ----------
+  var WALL_BOTTOM = 210;          // floor line
+  var WIN = { x:178, y:52, w:120, h:118 };
+  var SHELF = { x:46, y:150, w:104, h:7 };
+  var DOOR = { x:392, y:78, w:58, h:132 };          // closed door on the wall
+  var MAILBOX = { x:352, y:120, w:30, h:30 };       // wall-mounted, beside door
+  var SWITCH = { x:322, y:122, w:12, h:20 };        // light switch on the wall
+  var RAIL_Y = WALL_BOTTOM - 52;  // chair rail (wallpaper above, wainscot below)
+  function clamp(v,a,b){ return v<a?a:(v>b?b:v); }
+
+  // ---- depth / perspective on the floor ----
+  // The floor recedes from WALL_BOTTOM (back) to the bottom (front).
+  // Items further back draw smaller (and are hazed lighter at render).
+  var FLOOR_TOP = WALL_BOTTOM + 2, FLOOR_BOT = VH - 4;
+  function depthT(footY){ return clamp((footY-FLOOR_TOP)/(FLOOR_BOT-FLOOR_TOP), 0, 1); }
+  function floorScale(footY){ return 0.74 + 0.46*depthT(footY); }   // back .74 → front 1.20
+
+  // which surfaces each item may rest on (priority order applied later)
+  var SURF_BY_ID = {
+    bed:["floor"], desk:["floor"], chair:["floor"], sidetable:["floor"],
+    couch:["floor"], rug:["floor"], floorlamp:["floor"], fiddle:["floor"],
+    strlights:["wall"], hangvine:["wall"], poster:["wall"], print:["wall"],
+    clock:["wall"], mirror:["wall"],
+    desklamp:["furniture","shelf","floor"], candle:["furniture","shelf","floor"],
+    succulent:["furniture","shelf","floor"], mossrock:["furniture","shelf","floor"],
+    mug:["furniture","shelf","floor"], books:["furniture","shelf","floor"],
+    radio:["furniture","shelf","floor"], vinyl:["furniture","shelf","floor"]
+  };
+  function placesOf(itm){ return itm.place==="view" ? ["view"] : (SURF_BY_ID[itm.id]||[itm.place]); }
+
+  // resolve a placed item's world position/scale, following its host
+  // (so things on furniture move with the furniture).
+  function host(id){ var p=S.placedItems[id]; return (p&&p.parent&&S.placedItems[p.parent])?p.parent:null; }
+  function worldX(id){ var p=S.placedItems[id]; if(!p) return 0; var h=host(id);
+    return h ? worldX(h)+(p.ox||0)*(S.placedItems[h].s||1) : p.x; }
+  function worldY(id){ var p=S.placedItems[id]; if(!p) return 0; var h=host(id);
+    return h ? worldY(h)+(p.oy||0)*(S.placedItems[h].s||1) : p.y; }
+  function worldS(id){ var p=S.placedItems[id]; if(!p) return 1; var h=host(id);
+    return h ? (S.placedItems[h].s||1) : (p.s||1); }
+  // drop a child back onto the floor at its current spot (host gone/removed)
+  function detach(id){
+    var p=S.placedItems[id]; if(!p) return;
+    var wx=worldX(id), wy=worldY(id), ws=worldS(id);
+    p.x=Math.round(wx); p.y=Math.round(wy); p.s=ws; p.surf="floor";
+    delete p.parent; delete p.ox; delete p.oy;
+  }
+  function detachChildren(hostId){
+    Object.keys(S.placedItems).forEach(function(k){
+      if (S.placedItems[k].parent===hostId) detach(k);
+    });
+  }
+
+  // flat usable tops of placed furniture, in sprite-local coords
+  var SURFACE_DEFS = {
+    desk:{y:7,x0:2,x1:50}, sidetable:{y:6,x0:4,x1:30},
+    bed:{y:19,x0:9,x1:55}, vinyl:{y:11,x0:3,x1:31}
+  };
+  function furnitureTopAt(cx, cy, selfId){
+    var ids=Object.keys(S.placedItems).sort(function(a,b){
+      return (S.placedItems[b].z||0)-(S.placedItems[a].z||0);
+    });
+    for (var i=0;i<ids.length;i++){
+      var fid=ids[i], d=SURFACE_DEFS[fid]; if(!d||fid===selfId) continue;
+      var ds=drawScaleOf(fid), fx=worldX(fid), fyy=worldY(fid);
+      var x0=fx+d.x0*ds, x1=fx+d.x1*ds, topY=fyy+d.y*ds;
+      if (cx>=x0-4 && cx<=x1+4 && cy>=topY-34 && cy<=topY+16)
+        return { id:fid, fx:fx, fy:fyy, x0:x0, x1:x1, topY:topY, s:worldS(fid) };
+    }
+    return null;
+  }
+
+  var GRID=8;
+  function snap(v){ return Math.round(v/GRID)*GRID; }
+
+  // a placement candidate for one surface, or null if the cursor isn't there.
+  function candidate(itm, surf, cx, cy){
+    var box=spriteBox(itm.id), ks=kof(itm.id), w, h, x, y, s, g=(S&&S.gridSnap);
+    if (surf==="floor"){
+      if (cy < WALL_BOTTOM+1) return null;
+      var fy=clamp(cy, FLOOR_TOP, FLOOR_BOT); if(g) fy=clamp(snap(fy),FLOOR_TOP,FLOOR_BOT);
+      s=floorScale(fy); w=box[0]*s*ks; h=box[1]*s*ks;
+      x=clamp(cx-w/2,2,VW-2-w); if(g) x=clamp(snap(x),2,VW-2-w);
+      return { x:Math.round(x), y:Math.round(fy-h), s:s, surf:"floor" };
+    }
+    if (surf==="shelf"){
+      if (cx<SHELF.x-24||cx>SHELF.x+SHELF.w+24||cy<SHELF.y-48||cy>SHELF.y+34) return null;
+      w=box[0]*ks; h=box[1]*ks;
+      x=clamp(cx-w/2,SHELF.x-2,SHELF.x+SHELF.w-w+2); if(g) x=clamp(snap(x),SHELF.x-2,SHELF.x+SHELF.w-w+2);
+      return { x:Math.round(x), y:Math.round(SHELF.y-h+1), s:1, surf:"shelf" };
+    }
+    if (surf==="furniture"){
+      var ft=furnitureTopAt(cx,cy,itm.id); if(!ft) return null;
+      s=ft.s; w=box[0]*s*ks; h=box[1]*s*ks;
+      if (w > (ft.x1-ft.x0)+10) return null;            // too big for that top
+      x=clamp(cx-w/2,ft.x0,ft.x1-w); if(g) x=clamp(ft.x0+snap(x-ft.x0),ft.x0,ft.x1-w);
+      y=ft.topY-h;
+      return { x:Math.round(x), y:Math.round(y), s:s, surf:"furniture",
+               parent:ft.id, ox:(Math.round(x)-ft.fx)/(ft.s||1),
+               oy:(Math.round(y)-ft.fy)/(ft.s||1) };
+    }
+    if (surf==="wall"){
+      if (cy > WALL_BOTTOM-4) return null;
+      w=box[0]*ks; h=box[1]*ks;
+      x=clamp(cx-w/2, 2, VW-2-w); if(g) x=clamp(snap(x),2,VW-2-w);
+      y=clamp(cy-h/2, 6, WALL_BOTTOM-h-4);
+      // tidy rows: align centre to a nearby hung item
+      var cyc=y+h/2, best=null, bd=13;
+      Object.keys(S.placedItems).forEach(function(k){
+        var q=S.placedItems[k]; if(q.surf!=="wall"||k===itm.id) return;
+        var qc=q.y+spriteBox(k)[1]*drawScaleOf(k)/2, dd=Math.abs(qc-cyc);
+        if (dd<bd){ bd=dd; best=qc; }
+      });
+      if (best!=null) y=clamp(best-h/2,6,WALL_BOTTOM-h-4);
+      else if (g) y=clamp(snap(y),6,WALL_BOTTOM-h-4);
+      var hitWin =(x+w>WIN.x-3 && x<WIN.x+WIN.w+3 && y+h>WIN.y-3 && y<WIN.y+WIN.h+3);
+      var hitDoor=(x+w>DOOR.x-3 && x<DOOR.x+DOOR.w+3 && y+h>DOOR.y-3);
+      if (hitWin || hitDoor) return null;               // keep off glass/door
+      return { x:Math.round(x), y:Math.round(y), s:1, surf:"wall" };
+    }
+    return null;
+  }
+  var SURF_PRIORITY = ["furniture","shelf","wall","floor"];
+  function validDrop(itm, cx, cy){
+    if (itm.place==="view") return null;     // views applied via catalog
+    var allowed=placesOf(itm);
+    for (var i=0;i<SURF_PRIORITY.length;i++){
+      var surf=SURF_PRIORITY[i];
+      if (allowed.indexOf(surf)===-1) continue;
+      var cand=candidate(itm, surf, cx, cy);
+      if (cand) return cand;
+    }
+    return null;
+  }
+
+  // ---------- canvas / render ----------
+  var canvas = document.getElementById("room");
+  var ctx = canvas.getContext("2d");
+  ctx.imageSmoothingEnabled = false;
+
+  // offscreen buffer so depth-haze + tinting follow the sprite's
+  // silhouette (no rectangle "box" around items)
+  var obuf=document.createElement("canvas"), octx=obuf.getContext("2d");
+  octx.imageSmoothingEnabled=false;
+  function softShadow(surf, x, y, w, h){
+    if (surf==="wall") return;
+    var cxs=x+w/2, cyb=y+h-1;
+    var rx=w*0.46, ry=Math.max(2, w*0.11);
+    ctx.save();
+    ctx.fillStyle="rgba(40,31,22,0.18)";
+    ctx.beginPath(); ctx.ellipse(cxs, cyb, rx, ry, 0, 0, 6.2832); ctx.fill();
+    ctx.fillStyle="rgba(40,31,22,0.16)";
+    ctx.beginPath(); ctx.ellipse(cxs, cyb, rx*0.58, ry*0.6, 0, 0, 6.2832); ctx.fill();
+    ctx.restore();
+  }
+  // plants that breathe a little in the draught. `pivot` is the fraction of
+  // the sprite (from the top) at the rigid line — the soil surface for potted
+  // plants, the hanger for the vine. The base stays perfectly still; only the
+  // greenery past the pivot moves. mode "up" = rooted (sways above the soil),
+  // "down" = hanging (sways below the pot, toward the free ends).
+  var SWAY = {
+    fiddle:   { amp:1.0, pivot:0.74, mode:"up"   },
+    succulent:{ amp:0.45,pivot:0.66, mode:"up"   },
+    mossrock: { amp:0.4, pivot:0.47, mode:"up"   },
+    hangvine: { amp:1.2, pivot:0.44, mode:"down" }
+  };
+  function drawPlaced(id, x, y, flip, s, hazeA, hazeCol, warmA){
+    var box=spriteBox(id);
+    if (obuf.width!==box[0]||obuf.height!==box[1]){ obuf.width=box[0]; obuf.height=box[1]; }
+    octx.clearRect(0,0,box[0],box[1]);
+    drawSprite(octx, id, 0, 0, flip, 1);
+    if (hazeA>0){
+      octx.save(); octx.globalCompositeOperation="source-atop";
+      octx.globalAlpha=hazeA; octx.fillStyle=hazeCol;
+      octx.fillRect(0,0,box[0],box[1]); octx.restore();
+    }
+    if (warmA>0){                       // light pooling: warm cast on lit items
+      octx.save(); octx.globalCompositeOperation="source-atop";
+      octx.globalAlpha=warmA; octx.fillStyle="#ffdca0";
+      octx.fillRect(0,0,box[0],box[1]); octx.restore();
+    }
+    var dw=Math.round(box[0]*s), dh=Math.round(box[1]*s);
+    // plant sway is controlled solely by its own toggle — independent of
+    // the global Reduced motion setting (which only freezes clouds & dust).
+    var swOK = !(S.settings && S.settings.sway===false);
+    var dx=Math.round(x), dy=Math.round(y), sw=swOK?SWAY[id]:null;
+    if (sw && sw.amp){
+      var t=Date.now()*0.0014, bands=Math.max(5, Math.round(dh/4));
+      var pv=sw.pivot, down=sw.mode==="down";
+      for (var i=0;i<bands;i++){
+        var f0=i/bands, f1=(i+1)/bands;
+        // fol: 0 across the rigid base (pot/hanger), ramping to 1 at the
+        // free end — so the pot never moves and there's no shear at the seam.
+        var fol = down ? (f0>pv ? (f0-pv)/(1-pv) : 0)
+                       : (f0<pv ? (1-f0/pv)       : 0);
+        var off=Math.sin(t + id.length + f0*2) * fol * 2.3 * sw.amp;
+        ctx.drawImage(obuf, 0, f0*box[1], box[0], (f1-f0)*box[1],
+          dx+off, dy+Math.round(f0*dh), dw, Math.ceil(dh/bands)+1);
+      }
+    } else {
+      ctx.drawImage(obuf, 0,0,box[0],box[1], dx,dy,dw,dh);
+    }
+  }
+  // is a toggleable item currently on? lamps/candle/lights default ON,
+  // radio/vinyl default OFF.
+  function defOn(id){ return id==="floorlamp"||id==="desklamp"||id==="candle"||id==="strlights"; }
+  function isOn(id){
+    var st=S.itemState&&S.itemState[id];
+    return st && typeof st.on==="boolean" ? st.on : defOn(id);
+  }
+  function toggleable(id){
+    return defOn(id) || id==="radio" || id==="vinyl";
+  }
+  // warm light source points (sprite-local) for emissive items
+  var EMIT = { floorlamp:[17,7], desklamp:[13,9], candle:[13,2] };
+  function glow(cx, cy, rad, col, a){
+    var g=ctx.createRadialGradient(cx,cy,0,cx,cy,rad);
+    g.addColorStop(0, col); g.addColorStop(1, "rgba(255,220,150,0)");
+    ctx.save(); ctx.globalAlpha=a; ctx.fillStyle=g;
+    ctx.beginPath(); ctx.arc(cx,cy,rad,0,6.2832); ctx.fill(); ctx.restore();
+  }
+  // emissive glow / "playing" cue, drawn over a placed item
+  // the warm light an item throws. `boost` (>1) is used for the lights-off
+  // pass, where lamps/candles become the room's actual light source.
+  function emitLight(id, wx, wy, s, tod, boost){
+    boost = boost||1;
+    var box=spriteBox(id);
+    var rmo = S.settings && S.settings.reduceMotion;
+    var now = rmo ? 0 : Date.now();
+    var nightish = tod && tod.k < -2;
+    if (EMIT[id] && isOn(id)){
+      var e=EMIT[id], gx=wx+e[0]*s, gy=wy+e[1]*s;
+      var fl = id==="candle" ? (0.72+0.28*Math.sin(now*0.02)+0.06*Math.sin(now*0.071)) : 1;
+      var reach = (id==="floorlamp"?26:id==="candle"?15:18) * (nightish?1.5:1) * boost;
+      glow(gx, gy, reach*s, "rgba(255,214,140,0.5)", Math.min(0.95,(nightish?0.62:0.5)*fl*boost));
+      glow(gx, gy, (id==="floorlamp"?14:8)*s*Math.sqrt(boost), "rgba(255,240,200,0.78)", Math.min(0.98,(nightish?0.7:0.55)*fl*boost));
+    }
+    if (id==="strlights" && isOn(id)){
+      for (var b=0;b<box[0];b+=11) glow(wx+(b+3)*s, wy+9*s, 9*s*(nightish?1.4:1)*boost, "rgba(255,210,130,0.45)", Math.min(0.9,(nightish?0.5:0.4)*boost));
+    }
+  }
+  function itemFx(id, wx, wy, s, tod){
+    var box=spriteBox(id);
+    var rmo = S.settings && S.settings.reduceMotion;
+    var now = rmo ? 0 : Date.now();
+    // when the room light is on, lamps add ambient glow in-place as before;
+    // when it's off, the glow is re-asserted later, on top of the darkness
+    if (S.roomLight) emitLight(id, wx, wy, s, tod, 1);
+    if (id==="vinyl" && isOn(id)){
+      // spinning record on the turntable
+      var rcx=wx+14*s, rcy=wy+9*s, ang=now*0.006;
+      ctx.save(); ctx.translate(rcx,rcy); ctx.rotate(ang);
+      ctx.fillStyle="#2b2533"; ctx.beginPath(); ctx.arc(0,0,5*s,0,6.2832); ctx.fill();
+      ctx.fillStyle="#cf8d83"; ctx.fillRect(-1*s,-5*s,2*s,3*s);
+      ctx.fillStyle="#f3ead2"; ctx.beginPath(); ctx.arc(0,0,1.1*s,0,6.2832); ctx.fill();
+      ctx.restore();
+    }
+    if ((id==="radio"||id==="vinyl") && isOn(id)){
+      var per = rmo? 0 : (Date.now()%1400)/1400;
+      var ny=wy - 4*s - per*6;
+      ctx.save(); ctx.globalAlpha = rmo ? 0.7 : (0.8 - per*0.7);
+      ctx.fillStyle="#5c4a3a"; ctx.font="9px monospace";
+      ctx.fillText("♪", wx+box[0]*s*0.7, ny);
+      ctx.restore();
+    }
+  }
+
+  var bird = null;            // a rare, quiet fly-past
+  var dust = [];
+  for (var i=0;i<26;i++) dust.push({
+    x: WIN.x + Math.random()*WIN.w,
+    y: WIN.y + Math.random()*(WALL_BOTTOM-WIN.y),
+    s: 0.05 + Math.random()*0.12,
+    d: Math.random()*Math.PI*2,
+    a: 0.15 + Math.random()*0.3
+  });
+
+  function drawRoom(ts) {
+    var tod = todNow();
+    var aWall  = S.activeWall;
+    var aFloor = S.activeFloor;
+    var wStyle=SURFACES[aWall]||SURFACES.wall_default;
+    var fStyle=SURFACES[aFloor]||SURFACES.floor_default;
+    var wallHex = (aWall==="wall_default")  ? cssToHex(tod.wall)
+                  : styleColor(aWall, tod.wall, DEF_WALL);
+    var floorHex = (aFloor==="floor_default") ? cssToHex(tod.floor)
+                  : styleColor(aFloor, tod.floor, DEF_FLOOR);
+    var sx, sy;
+
+    // ---- wall base ----
+    px(ctx,0,0,VW,WALL_BOTTOM, wallHex);
+    if (wStyle.pat==="stripe" || wStyle.pat==="plaid"){
+      for (sx=0; sx<VW; sx+=18) px(ctx, sx, 0, 9, RAIL_Y, shade(wallHex,5));
+    }
+    if (wStyle.pat==="plaid"){
+      for (sy=0; sy<RAIL_Y; sy+=18) px(ctx, 0, sy, VW, 8, shade(wallHex,-6));
+    }
+    if (wStyle.pat==="stripe"){    // sprig motif only on the default-style paper
+      for (sx=14; sx<VW; sx+=36) for (sy=16; sy<RAIL_Y-6; sy+=24){
+        px(ctx,sx,sy,1,4, shade(wallHex,-13));
+        px(ctx,sx-2,sy+1,2,1, shade(wallHex,-13));
+        px(ctx,sx+1,sy+2,2,1, shade(wallHex,-13));
+      }
+    }
+    // picture rail
+    px(ctx,0,20,VW,2, shade(wallHex,-26)); px(ctx,0,22,VW,1, shade(wallHex,12));
+    // chair rail + wainscot below it
+    px(ctx,0,RAIL_Y,VW,WALL_BOTTOM-RAIL_Y, shade(wallHex,-7));
+    px(ctx,0,RAIL_Y-4,VW,4, shade(wallHex,-22));
+    px(ctx,0,RAIL_Y-4,VW,1, shade(wallHex,16));
+    for (sx=12; sx<VW; sx+=44){                       // wainscot battens
+      px(ctx,sx,RAIL_Y+4,3,WALL_BOTTOM-RAIL_Y-13, shade(wallHex,-16));
+      px(ctx,sx+1,RAIL_Y+4,1,WALL_BOTTOM-RAIL_Y-13, shade(wallHex,9));
+    }
+    // baseboard
+    px(ctx,0,WALL_BOTTOM-9,VW,9, shade(wallHex,-28));
+    px(ctx,0,WALL_BOTTOM-9,VW,2, shade(wallHex,4));
+    px(ctx,0,WALL_BOTTOM-2,VW,2, shade(wallHex,-44));
+
+    // ---- floor ----
+    px(ctx,0,WALL_BOTTOM,VW,VH-WALL_BOTTOM, floorHex);
+    px(ctx,0,WALL_BOTTOM,VW,3, shade(floorHex,20));
+    if (fStyle.pat==="tile"){
+      for (sy=WALL_BOTTOM+2; sy<VH; sy+=15){
+        var off=(((sy-WALL_BOTTOM)/15|0)%2)*15;
+        for (sx=-off; sx<VW; sx+=30){
+          px(ctx,sx,sy,29,14, shade(floorHex, ((sx/30|0)%2)?-6:4));
+          px(ctx,sx,sy,29,1, shade(floorHex,16));
+          px(ctx,sx,sy,1,14, shade(floorHex,12));
+        }
+        px(ctx,0,sy-1,VW,1, shade(floorHex,-22));
+      }
+    } else {
+      for (sy=WALL_BOTTOM+13; sy<VH; sy+=14){
+        px(ctx,0,sy,VW,1, shade(floorHex,-18));
+        for (sx=((((sy/14)|0)%2)*40); sx<VW; sx+=80)
+          px(ctx,sx,sy-13,1,13, shade(floorHex,-11));  // staggered plank ends
+      }
+    }
+    px(ctx,0,VH-3,VW,3, shade(floorHex,-26));
+
+    // ---- architecture ----
+    drawDoor(tod, wallHex);
+    drawWindow(tod);
+
+    // light cast from the window — angle & reach follow the sun's hour:
+    // low morning sun throws a long beam one way, midday short & centred,
+    // evening long the other way; faint at night.
+    var hr = new Date().getHours() + new Date().getMinutes()/60;
+    var dayF = clamp((hr-5)/16, 0, 1);                 // 0 dawn → 1 dusk
+    var slant = (dayF-0.5)*2;                           // -1 morning → +1 evening
+    var noon  = 1 - Math.abs(slant);                    // 1 at midday
+    var reachY = WALL_BOTTOM + 92 - 46*noon;            // shorter beam midday
+    var foot   = -slant*120;                            // beam sweeps across floor
+    var litA   = (0.07 + 0.16*noon) * Math.max(0, (tod.k+26)/52)
+                 * (S.curtains==="closed" ? ((S.settings&&S.settings.blackout)?0.03:0.12)
+                    : S.curtains==="sheer" ? 0.55 : 1);
+    function litRGB(){ var c=cssToHex(tod.lit).replace("#","");
+      return parseInt(c.substr(0,2),16)+","+parseInt(c.substr(2,2),16)+","+parseInt(c.substr(4,2),16); }
+    // a soft volumetric shaft: a wide penumbra, a brighter core that fades
+    // out before the floor (no hard rectangle), a warm spill at the glass,
+    // a muntin shadow seam splitting it into panes, and a gentle floor pool.
+    function beamPath(spread, yTop, yBot){
+      var tx=WIN.x+WIN.w/2, halfTop=(WIN.w/2-6)+spread;
+      ctx.beginPath();
+      ctx.moveTo(tx-halfTop, yTop);
+      ctx.lineTo(tx+halfTop, yTop);
+      ctx.lineTo(tx+halfTop+44+foot, yBot);
+      ctx.lineTo(tx-halfTop-44+foot, yBot);
+      ctx.closePath();
+    }
+    function shaft(aMul, additive){
+      if (litA <= 0.012) return;
+      var A=Math.min(1, litA*aMul), col=litRGB();
+      var yTop=WIN.y+WIN.h, yBot=reachY;
+      ctx.save();
+      if (additive) ctx.globalCompositeOperation="lighter";
+      // soft outer penumbra — wider, faint, fades along its length
+      var pg=ctx.createLinearGradient(0,yTop,0,yBot);
+      pg.addColorStop(0,   "rgba("+col+","+(A*0.34).toFixed(3)+")");
+      pg.addColorStop(0.55,"rgba("+col+","+(A*0.16).toFixed(3)+")");
+      pg.addColorStop(1,   "rgba("+col+",0)");
+      ctx.fillStyle=pg; beamPath(26,yTop,yBot); ctx.fill();
+      // brighter core — clipped, with a length falloff so it dissolves
+      // into the floor instead of ending in a hard block
+      ctx.save();
+      beamPath(0,yTop,yBot); ctx.clip();
+      var cg=ctx.createLinearGradient(0,yTop,0,yBot);
+      cg.addColorStop(0,   "rgba("+col+","+(A*0.95).toFixed(3)+")");
+      cg.addColorStop(0.35,"rgba("+col+","+(A*0.55).toFixed(3)+")");
+      cg.addColorStop(0.72,"rgba("+col+","+(A*0.20).toFixed(3)+")");
+      cg.addColorStop(1,   "rgba("+col+",0)");
+      ctx.fillStyle=cg; ctx.fillRect(0,yTop-2,VW,yBot-yTop+4);
+      // warm spill right at the glass
+      var sx=WIN.x+WIN.w/2, rr=WIN.w*0.62;
+      var rg=ctx.createRadialGradient(sx,yTop,2,sx,yTop,rr);
+      rg.addColorStop(0,"rgba("+col+","+(A*0.55).toFixed(3)+")");
+      rg.addColorStop(1,"rgba("+col+",0)");
+      ctx.fillStyle=rg; ctx.beginPath(); ctx.arc(sx,yTop,rr,0,6.2832); ctx.fill();
+      // muntin shadow seam: carve a soft gap so it reads as panes
+      ctx.globalCompositeOperation="destination-out";
+      var seamTop=WIN.x+WIN.w/2, seamBot=WIN.x+WIN.w/2+foot;
+      var mg=ctx.createLinearGradient(0,yTop,0,yBot);
+      mg.addColorStop(0,"rgba(0,0,0,0.30)"); mg.addColorStop(0.1,"rgba(0,0,0,0.6)");
+      mg.addColorStop(0.85,"rgba(0,0,0,0.12)"); mg.addColorStop(1,"rgba(0,0,0,0)");
+      ctx.fillStyle=mg;
+      ctx.beginPath();
+      ctx.moveTo(seamTop-3,yTop); ctx.lineTo(seamTop+3,yTop);
+      ctx.lineTo(seamBot+6,yBot); ctx.lineTo(seamBot-6,yBot);
+      ctx.closePath(); ctx.fill();
+      ctx.restore();
+      // gentle warm pool where the light lands
+      var px0=WIN.x+WIN.w/2+foot, py0=yBot-12, prx=WIN.w*0.5+30, pry=15;
+      var lp=ctx.createRadialGradient(px0,py0,2,px0,py0,prx);
+      lp.addColorStop(0,"rgba("+col+","+(A*0.42).toFixed(3)+")");
+      lp.addColorStop(1,"rgba("+col+",0)");
+      ctx.save(); ctx.translate(px0,py0); ctx.scale(1,pry/prx);
+      ctx.fillStyle=lp; ctx.beginPath(); ctx.arc(0,0,prx,0,6.2832); ctx.fill(); ctx.restore();
+      ctx.restore();
+    }
+    // the whole pane is the light source: a glow across the full glass
+    // plus a soft bloom spilling onto the wall around the window, so the
+    // light reads as coming from the entire window — not just its bottom.
+    function windowGlow(aMul, additive){
+      if (litA <= 0.012) return;
+      var A=Math.min(1, litA*aMul), col=litRGB();
+      var cx=WIN.x+WIN.w/2, cy=WIN.y+WIN.h*0.46;
+      ctx.save();
+      if (additive) ctx.globalCompositeOperation="lighter";
+      // wall bloom around the window
+      var br=Math.max(WIN.w,WIN.h)*1.05;
+      var bg=ctx.createRadialGradient(cx,cy,WIN.w*0.18,cx,cy,br);
+      bg.addColorStop(0,   "rgba("+col+","+(A*0.32).toFixed(3)+")");
+      bg.addColorStop(0.55,"rgba("+col+","+(A*0.13).toFixed(3)+")");
+      bg.addColorStop(1,   "rgba("+col+",0)");
+      ctx.fillStyle=bg;
+      ctx.save(); ctx.translate(cx,cy); ctx.scale(1,1.06);
+      ctx.beginPath(); ctx.arc(0,0,br,0,6.2832); ctx.fill(); ctx.restore();
+      // the glass itself glows, top to bottom (clipped to the pane)
+      ctx.save();
+      ctx.beginPath(); ctx.rect(WIN.x,WIN.y,WIN.w,WIN.h); ctx.clip();
+      var gg=ctx.createLinearGradient(0,WIN.y,0,WIN.y+WIN.h);
+      gg.addColorStop(0,  "rgba("+col+","+(A*0.52).toFixed(3)+")");
+      gg.addColorStop(0.5,"rgba("+col+","+(A*0.40).toFixed(3)+")");
+      gg.addColorStop(1,  "rgba("+col+","+(A*0.58).toFixed(3)+")");
+      ctx.fillStyle=gg; ctx.fillRect(WIN.x,WIN.y,WIN.w,WIN.h);
+      ctx.restore();
+      ctx.restore();
+    }
+    // light on: window light is ambient, drawn in place. light off: skip
+    // here — it's re-asserted over the darkness so it actually reads.
+    if (S.roomLight){ windowGlow(1, false); shaft(1, false); }
+
+    drawShelf(wallHex);
+    drawMailbox(tod);
+    drawSwitch(wallHex);
+
+    // orphaned passengers (host removed) fall back to the floor
+    Object.keys(S.placedItems).forEach(function(id){
+      var p=S.placedItems[id];
+      if (p.parent && !S.placedItems[p.parent]) detach(id);
+    });
+    // sort by z layer, then resolved foot position for natural overlap
+    var hazeCol = shade(cssToHex(tod.wall), 34);
+    var ids = Object.keys(S.placedItems).sort(function(a,b){
+      var za=S.placedItems[a].z||0, zb=S.placedItems[b].z||0;
+      if (za!==zb) return za-zb;
+      return (worldY(a)+spriteBox(a)[1]*drawScaleOf(a)) - (worldY(b)+spriteBox(b)[1]*drawScaleOf(b));
+    });
+    var emitters=[];
+    ids.forEach(function (id) {
+      if (!BY_ID[id]) return;
+      var p = S.placedItems[id];
+      if (dragging && dragging.from === "room" && dragging.id === id) return;
+      var es=drawScaleOf(id), box=spriteBox(id), wx=worldX(id), wy=worldY(id);
+      var w=box[0]*es, h=box[1]*es;
+      softShadow(p.surf, wx, wy, w, h);
+      var hazeA=0;
+      if (p.surf==="floor"){           // atmospheric depth: farther = lighter
+        var t=depthT(wy + h);
+        if (t < 0.97) hazeA=(1-t)*0.18;
+      }
+      // light pooling: items standing in the window beam catch warm light
+      var warmA=0;
+      if (litA>0.03 && S.curtains!=="closed"){
+        var cxw=wx+w/2, fyw=wy+h;
+        var depthF=clamp((fyw-(WIN.y+WIN.h))/(reachY-(WIN.y+WIN.h)),0,1);
+        var bx0=WIN.x+6 + foot*depthF - 26*depthF;
+        var bx1=WIN.x+WIN.w-6 + foot*depthF + 26*depthF;
+        if (cxw>bx0 && cxw<bx1 && fyw>WIN.y+WIN.h-4) warmA = Math.min(0.22, litA*1.1);
+      }
+      drawPlaced(id, wx, wy, p.flip, es, hazeA, hazeCol, warmA);
+      itemFx(id, wx, wy, es, tod);
+      if (((EMIT[id]||id==="strlights") && isOn(id)))
+        emitters.push({id:id, wx:wx, wy:wy, es:es});
+    });
+
+    // dust motes drifting in the window light
+    var dustStill = S.settings && S.settings.reduceMotion;
+    for (var k=0;k<dust.length;k++){
+      var m=dust[k];
+      if (!dustStill){
+        m.d += 0.01; m.y += m.s; m.x += Math.sin(m.d)*0.18;
+        if (m.y > WALL_BOTTOM+30 || m.x<WIN.x-30 || m.x>WIN.x+WIN.w+30){
+          m.x=WIN.x+Math.random()*WIN.w; m.y=WIN.y+Math.random()*20;
+        }
+      }
+      ctx.globalAlpha=m.a*(0.5+0.5*Math.sin(m.d));
+      px(ctx, m.x, m.y, 2, 2, tod.lit);
+    }
+    ctx.globalAlpha=1;
+
+    // drag preview
+    if (dragging && dragging.preview) {
+      ctx.globalAlpha = dragging.preview.ok ? 0.85 : 0.4;
+      drawSprite(ctx, dragging.id, dragging.preview.x, dragging.preview.y, dragging.flip, dragging.preview.s*kof(dragging.id));
+      ctx.globalAlpha = 1;
+    }
+
+    // time-of-day color overlay
+    px(ctx,0,0,VW,VH, tod.overlay);
+
+    // a whisper of seasonal colour by the real-world month — very faint,
+    // just enough that winter feels cooler and autumn warmer over time
+    var SEASON=[ "rgba(150,178,210,0.055)","rgba(150,178,210,0.055)",
+      "rgba(150,200,160,0.045)","rgba(150,200,160,0.045)","rgba(150,200,160,0.045)",
+      "rgba(255,212,140,0.05)","rgba(255,212,140,0.05)","rgba(255,212,140,0.05)",
+      "rgba(222,150,86,0.055)","rgba(222,150,86,0.055)","rgba(222,150,86,0.055)",
+      "rgba(150,178,210,0.055)" ];
+    px(ctx,0,0,VW,VH, SEASON[(new Date()).getMonth()]);
+
+    // room light off → real moody lighting: drop the whole room into shadow,
+    // then re-assert the actual light sources ON TOP, additively, so lamps,
+    // the candle and the incoming window light genuinely illuminate instead
+    // of everything just getting a flat tint.
+    if (!S.roomLight){
+      var da = Math.max(0.46, Math.min(0.82, 0.66 - tod.k*0.006));
+      px(ctx,0,0,VW,VH, "rgba(13,11,22,"+da.toFixed(3)+")");
+      windowGlow(2.1, true);                             // the pane still glows
+      shaft(2.1, true);                                  // window light cuts in
+      emitters.forEach(function(em){
+        emitLight(em.id, em.wx, em.wy, em.es, tod, 1.7); // lamps carry the room
+      });
+    }
+  }
+  function cssToHex(s){
+    if (s[0]==="#") return s;
+    var m=s.match(/[\d.]+/g);
+    function h(n){ n=Math.max(0,Math.min(255,Math.round(+n))).toString(16); return n.length<2?"0"+n:n; }
+    return "#"+h(m[0])+h(m[1])+h(m[2]);
+  }
+  // a recessed door panel
+  function panelInset(x,y,w,h){
+    px(ctx,x,y,w,h, WOOD.dk);
+    px(ctx,x,y,w,1, OL); px(ctx,x,y,1,h, OL);
+    px(ctx,x+1,y+1,w-2,h-2, WOOD.md);
+    px(ctx,x+2,y+2,w-3,1, WOOD.hi);
+  }
+  function drawDoor(tod, wallHex){
+    var d=DOOR;
+    // architrave
+    px(ctx,d.x-6,d.y-6,d.w+12,d.h+6, shade(wallHex,-24));
+    px(ctx,d.x-6,d.y-6,d.w+12,2, shade(wallHex,8));
+    px(ctx,d.x-6,d.y-6,2,d.h+6, shade(wallHex,6));
+    // slab
+    px(ctx,d.x-1,d.y-1,d.w+2,d.h+1, OL);
+    px(ctx,d.x,d.y,d.w,d.h, WOOD.md);
+    px(ctx,d.x,d.y,2,d.h, WOOD.hi); px(ctx,d.x,d.y,d.w,2, WOOD.hi);
+    px(ctx,d.x+d.w-2,d.y,2,d.h, WOOD.dk);
+    // recessed panels
+    panelInset(d.x+8,d.y+10,d.w-16,46);
+    panelInset(d.x+8,d.y+62,d.w-16,d.h-74);
+    // knob + threshold
+    px(ctx,d.x+7,d.y+(d.h>>1)-4,5,7,OL);
+    px(ctx,d.x+8,d.y+(d.h>>1)-3,3,5,"#d8b463");
+    dot(ctx,d.x+8,d.y+(d.h>>1)-2,"#f0d79a");
+    px(ctx,d.x-6,WALL_BOTTOM-2,d.w+12,2, shade(wallHex,-34));
+  }
+  function drawWindow(tod){
+    var fx=WIN.x-9, fy=WIN.y-9, fw=WIN.w+18, fh=WIN.h+18;
+    px(ctx,fx-1,fy-1,fw+2,fh+2, OL);
+    px(ctx,fx,fy,fw,fh, WOOD.md);
+    px(ctx,fx,fy,fw,2, WOOD.hi); px(ctx,fx,fy,2,fh, WOOD.hi);
+    px(ctx,fx+fw-2,fy,2,fh, WOOD.dk); px(ctx,fx,fy+fh-2,fw,2, WOOD.dk);
+    px(ctx,WIN.x-2,WIN.y-2,WIN.w+4,WIN.h+4, OL);   // inner reveal
+    var view = hasView(S.activeView) ? S.activeView : "view_clouds";
+    drawView(ctx, view, WIN.x, WIN.y, WIN.w, WIN.h, tod);
+    // muntins (cross bars)
+    px(ctx, WIN.x+WIN.w/2-2, WIN.y, 4, WIN.h, WOOD.md);
+    px(ctx, WIN.x+WIN.w/2-2, WIN.y, 2, WIN.h, WOOD.hi);
+    px(ctx, WIN.x, WIN.y+WIN.h/2-2, WIN.w, 4, WOOD.md);
+    px(ctx, WIN.x, WIN.y+WIN.h/2-2, WIN.w, 2, WOOD.hi);
+    // sill
+    px(ctx,fx-5,fy+fh-1,fw+10,5, WOOD.md);
+    px(ctx,fx-5,fy+fh-1,fw+10,1, WOOD.hi);
+    px(ctx,fx-5,fy+fh+4,fw+10,1, OL);
+    // curtain rod + curtains (click the window to open/close)
+    px(ctx,fx-12,fy-9,fw+24,4, WOOD.dk);
+    px(ctx,fx-12,fy-9,fw+24,1, WOOD.hi);
+    if (S.curtains==="closed"){
+      var half=Math.ceil((fw+18)/2);
+      curtainPanel(fx-9, fy-5, half, fh+8, false);
+      curtainPanel(fx-9+half-1, fy-5, half, fh+8, true);
+      px(ctx, fx-9+half-1, fy-5, 1, fh+8, OL);       // centre seam
+    } else if (S.curtains==="sheer"){
+      // gauzy veil drawn over the glass + slim side curtains
+      ctx.save(); ctx.globalAlpha=0.5;
+      px(ctx, WIN.x, WIN.y, WIN.w, WIN.h, "#efe8d4");
+      ctx.globalAlpha=0.18;
+      for (var vv=WIN.x; vv<WIN.x+WIN.w; vv+=3) px(ctx, vv, WIN.y, 1, WIN.h, "#cfc6ad");
+      ctx.restore();
+      curtainPanel(fx-9, fy-5, 15, fh+8, false);
+      curtainPanel(fx+fw-6, fy-5, 15, fh+8, true);
+    } else {
+      curtainPanel(fx-9, fy-5, 15, fh+8, false);
+      curtainPanel(fx+fw-6, fy-5, 15, fh+8, true);
+    }
+  }
+  function curtainPanel(x,y,w,h,right){
+    px(ctx,x-1,y-1,w+2,h+2, OL);
+    for (var i=0;i<h;i++){
+      var yy=y+i; px(ctx,x,yy,w,1, CLO.md);
+      for (var f=0; f<w; f+=4){
+        var fold=((f/4|0)%2);
+        px(ctx,x+f,yy,2,1, fold? CLO.dk : CLO.lt);
+      }
+    }
+    px(ctx,x,y,w,2, CLO.hi);
+  }
+  function drawBracket(bx,by){
+    for (var i=0;i<12;i++){ var w=12-i; px(ctx,bx,by+i,w,1, i? WOOD.md : OL); }
+    px(ctx,bx,by,1,12, OL); px(ctx,bx,by,3,1, WOOD.hi);
+  }
+  function drawShelf(wallHex){
+    var s=SHELF;
+    px(ctx, s.x+3, s.y+s.h+1, s.w-3, 4, shade(wallHex,-20));  // wall shadow
+    drawBracket(s.x+7, s.y+s.h);
+    drawBracket(s.x+s.w-15, s.y+s.h);
+    px(ctx, s.x-1, s.y-1, s.w+2, s.h+2, OL);                   // plank
+    px(ctx, s.x, s.y, s.w, s.h, WOOD.md);
+    px(ctx, s.x, s.y, s.w, 2, WOOD.hi);
+    px(ctx, s.x, s.y+s.h-1, s.w, 1, WOOD.dk);
+  }
+  function drawMailbox(tod) {
+    var b=MAILBOX;
+    // mounting board on the wall
+    px(ctx,b.x-4,b.y-3,b.w+8,b.h+7, OL);
+    px(ctx,b.x-3,b.y-2,b.w+6,b.h+5, WOOD.dk);
+    px(ctx,b.x-3,b.y-2,b.w+6,1, WOOD.md);
+    // body
+    px(ctx,b.x-1,b.y-1,b.w+2,b.h+2, OL);
+    px(ctx,b.x,b.y,b.w,b.h, "#7d9079");
+    px(ctx,b.x,b.y,b.w,3, "#9cb396");
+    px(ctx,b.x,b.y,3,b.h, "#8fa78a");
+    px(ctx,b.x+b.w-3,b.y,3,b.h, "#5f7060");
+    px(ctx,b.x+4,b.y+9,b.w-8,4, "#2b211a");           // letter slot
+    px(ctx,b.x+4,b.y+9,b.w-8,1, "#1f1813");
+    dot(ctx,b.x+2,b.y+2,"#3a2e24"); dot(ctx,b.x+b.w-3,b.y+2,"#3a2e24");
+    dot(ctx,b.x+2,b.y+b.h-3,"#3a2e24"); dot(ctx,b.x+b.w-3,b.y+b.h-3,"#3a2e24");
+    var waiting = S.pendingOrders.length>0, ready = (S.mailWaiting&&S.mailWaiting.length>0);
+    var fl = ready?13:(waiting?8:3);                   // raised flag = mail
+    px(ctx,b.x+b.w+1,b.y+3,1,fl, OL);
+    px(ctx,b.x+b.w+2,b.y+3,2,fl, ready?"#cf8d83":(waiting?"#e6b483":"#8a7560"));
+    if (ready||waiting) px(ctx,b.x+b.w+4,b.y+3,7,5, ready?"#cf8d83":"#e6b483");
+  }
+
+  // light switch on the wall — click to toggle the room light (moody mode)
+  function drawSwitch(wallHex){
+    var s=SWITCH, on=S.roomLight;
+    px(ctx,s.x-2,s.y-2,s.w+4,s.h+4, shade(wallHex,-22));   // screw plate shadow
+    px(ctx,s.x-1,s.y-1,s.w+2,s.h+2, OL);
+    px(ctx,s.x,s.y,s.w,s.h, "#e7dcc4");                     // ivory faceplate
+    px(ctx,s.x,s.y,s.w,1, "#f6efdd");
+    px(ctx,s.x,s.y+s.h-1,s.w,1, "#c9bb9b");
+    dot(ctx,s.x+1,s.y+1,"#b6a785"); dot(ctx,s.x+s.w-2,s.y+s.h-2,"#b6a785");
+    // rocker: up half lit when on, lower half pressed when off
+    var rx=s.x+3, rw=s.w-6, ry=s.y+3, rh=s.h-6;
+    px(ctx,rx,ry,rw,rh, OL);
+    if (on){
+      px(ctx,rx,ry,rw,Math.floor(rh*0.5)+1, "#f3d28a");    // pressed-up (on)
+      px(ctx,rx,ry,rw,1, "#fde7ad");
+      px(ctx,rx,ry+Math.floor(rh*0.5)+1,rw,rh-Math.floor(rh*0.5)-1, "#9c8f78");
+    } else {
+      px(ctx,rx,ry,rw,Math.ceil(rh*0.5), "#6f6453");        // pressed-down (off)
+      px(ctx,rx,ry+Math.ceil(rh*0.5),rw,rh-Math.ceil(rh*0.5), "#cdbf9f");
+      px(ctx,rx,ry+rh-1,rw,1, "#e3d6b6");
+    }
+    dot(ctx,s.x+s.w-2,s.y+1, on?"#f4c267":"#5c4a3a");       // tiny status pip
+  }
+
+  // adaptive framerate: ambient motion is slow, so ~30fps is plenty and
+  // halves render cost on weak phones; with Reduced motion the scene is
+  // fully static, so drop to ~1fps (just enough to keep the clock fresh).
+  var _lastFrame=0;
+  function frame(ts){
+    var rm = S.settings && S.settings.reduceMotion;
+    var modalOpen = document.querySelector(".scrim.open");
+    var minGap = (rm && !dragging && !modalOpen) ? 1000 : 33;
+    if (!_lastFrame || ts-_lastFrame >= minGap){ _lastFrame=ts; drawRoom(ts); }
+    requestAnimationFrame(frame);
+  }
+
+  // ---------- HUD / UI ----------
+  var elStamp=document.getElementById("stampCount");
+  var elInvGrid=document.getElementById("invGrid");
+  var elInvCount=document.getElementById("invCount");
+  var elMailBadge=document.getElementById("mailBadge");
+  var elAccrued=document.getElementById("accruedNote");
+
+  // render a sprite to fit within a maxPx x maxPx box (keeps aspect,
+  // downscales big sprites, integer-scales small ones)
+  function thumb(id, maxPx) {
+    maxPx = maxPx || 48;
+    var box=spriteBox(id), w=box[0], h=box[1];
+    var scale = Math.min(maxPx/w, maxPx/h);
+    if (scale >= 1) scale = Math.floor(scale);
+    var cv=document.createElement("canvas");
+    cv.width=Math.round(w*scale); cv.height=Math.round(h*scale);
+    var cc=cv.getContext("2d"); cc.imageSmoothingEnabled=false; cc.scale(scale,scale);
+    drawSprite(cc,id,0,0);
+    return cv;
+  }
+  // swatch tile for things without a sprite (views / surface styles)
+  function swatch(it){
+    var cv=document.createElement("canvas"); cv.width=46; cv.height=46;
+    var c=cv.getContext("2d"); c.imageSmoothingEnabled=false;
+    var x,y;
+    if (it.place==="surface"){
+      var s=SURFACES[it.id], b=cssToHex(s.base);
+      c.fillStyle=b; c.fillRect(0,0,46,46);
+      if (s.pat==="planks"){ c.fillStyle=shade(b,-16);
+        for (y=5;y<46;y+=11) c.fillRect(0,y,46,1); }
+      else if (s.pat==="tile"){
+        for (y=0;y<46;y+=12) for (x=0;x<46;x+=12){
+          c.fillStyle=(((x+y)/12|0)%2)?shade(b,7):shade(b,-9); c.fillRect(x,y,11,11); } }
+      else if (s.pat==="stripe"){ c.fillStyle=shade(b,7);
+        for (x=0;x<46;x+=8) c.fillRect(x,0,4,46); }
+      else if (s.pat==="plaid"){ c.fillStyle=shade(b,7);
+        for (x=0;x<46;x+=8) c.fillRect(x,0,4,46);
+        c.fillStyle=shade(b,-9); for (y=0;y<46;y+=8) c.fillRect(0,y,46,4); }
+    } else {                                   // window view
+      c.fillStyle="#a8c6db"; c.fillRect(0,0,46,46);
+      c.fillStyle="#f3edda"; c.fillRect(7,11,15,5); c.fillRect(25,21,14,5);
+      c.fillStyle="#6f8b5c"; c.fillRect(0,33,46,13);
+    }
+    c.fillStyle="#2a2018";
+    c.fillRect(0,0,46,2); c.fillRect(0,44,46,2);
+    c.fillRect(0,0,2,46); c.fillRect(44,0,2,46);
+    return cv;
+  }
+  function wareThumb(it){ return SPRITES[it.id] ? thumb(it.id,52) : swatch(it); }
+  function applyStyle(id){
+    var s=SURFACES[id]; if(!s) return;
+    pushUndo();
+    var key=(s.kind==="floor")?"activeFloor":"activeWall";
+    var def=(s.kind==="floor")?"floor_default":"wall_default";
+    var prev=S[key];
+    if (prev && prev!==def && S.ownedItems.indexOf(prev)===-1) S.ownedItems.push(prev);
+    S[key]=id;
+    var i=S.ownedItems.indexOf(id); if(i!==-1) S.ownedItems.splice(i,1);
+    clearMail(id);
+    refreshHUD(); if (typeof buildMail==="function") buildMail();
+  }
+
+  function refreshHUD() {
+    elStamp.textContent = S.stamps;
+    elAccrued.textContent = lastAccrued>0 ? ("+"+lastAccrued+" WHILE AWAY") : "·";
+    // inventory = owned, not placed
+    elInvGrid.innerHTML="";
+    var own = S.ownedItems.filter(function(id){ return !S.placedItems[id]; });
+    elInvCount.textContent = own.length;
+    if (own.length===0){
+      var n=document.createElement("div"); n.className="empty-note";
+      n.textContent="Nothing waiting to place. Send away for things from the Catalog.";
+      elInvGrid.appendChild(n);
+    } else {
+      own.forEach(function(id){
+        var it=BY_ID[id];
+        var d=document.createElement("div"); d.className="inv-item"; d.dataset.id=id;
+        d.appendChild(thumb(id,46));
+        var s=document.createElement("span"); s.textContent=it.name; d.appendChild(s);
+        d.addEventListener("pointerdown", function(e){ startDrag(e, id, "inv"); });
+        elInvGrid.appendChild(d);
+      });
+    }
+    var mailCount = S.pendingOrders.length + (S.mailWaiting?S.mailWaiting.length:0);
+    if (mailCount>0){ elMailBadge.style.display="flex"; elMailBadge.textContent=mailCount; }
+    else elMailBadge.style.display="none";
+    saveState();
+    if (typeof audioSync==="function") audioSync();
+  }
+
+  // ---------- catalog ----------
+  var shopBody=document.getElementById("shopBody");
+  function buildShop() {
+    shopBody.innerHTML="";
+    CAT_ORDER.forEach(function(cat){
+      var items=CATALOG.filter(function(i){return i.cat===cat && !i.starter;});
+      if (!items.length) return;
+      var h=document.createElement("div"); h.className="cat-title"; h.textContent=cat.toUpperCase();
+      shopBody.appendChild(h);
+      var row=document.createElement("div"); row.className="shelf-row";
+      items.forEach(function(it){
+        var w=document.createElement("div"); w.className="ware";
+        w.appendChild(wareThumb(it));
+        var meta=document.createElement("div"); meta.className="meta";
+        meta.innerHTML="<b>"+it.name+"</b><small>"+it.tier.toUpperCase()+
+          " · "+(isSupporter()?"INSTANT":fmtDelay(TIER_DELAY_MS[it.tier]))+" DELIVERY</small>";
+        w.appendChild(meta);
+        var btn=document.createElement("button");
+        var applyable = (it.place==="view"||it.place==="surface");
+        var applied = it.place==="view" ? (it.id===S.activeView)
+                    : it.place==="surface" ? styleActive(it.id) : false;
+        var have = applyable ? (applied || isObtained(it.id) ||
+                     (it.place==="view"&&hasView(it.id))) : isObtained(it.id);
+        if (applyable && applied){
+          w.classList.add("owned"); btn.textContent="ACTIVE"; btn.disabled=true;
+        } else if (applyable && have){
+          btn.textContent="USE"; btn.style.background="var(--sage)";
+          btn.addEventListener("click", function(){
+            if (it.place==="view") applyView(it.id); else applyStyle(it.id);
+            buildShop();
+          });
+        } else if (have){
+          w.classList.add("owned"); btn.textContent="OWNED"; btn.disabled=true;
+        } else if (S.stamps < it.cost){
+          btn.textContent=(it.cost-S.stamps)+" TO GO"; btn.disabled=true;
+          btn.title="Earn "+(it.cost-S.stamps)+" more stamps";
+        } else {
+          btn.innerHTML='<span class="cnum">'+it.cost+'</span><span class="cunit">stamps</span>';
+          btn.addEventListener("click", function(){ order(it); });
+        }
+        w.appendChild(btn);
+        row.appendChild(w);
+      });
+      shopBody.appendChild(row);
+    });
+  }
+  function order(it) {
+    if (S.stamps < it.cost) return;
+    S.stamps -= it.cost;
+    var arrive = Date.now() + orderDelay(it.tier);
+    S.pendingOrders.push({ itemId: it.id, arrivesAt: new Date(arrive).toISOString() });
+    refreshHUD(); buildShop(); flashBtn();
+  }
+  function flashBtn(){ /* subtle: counter just updates, stay quiet per spec */ }
+
+  // Clicking a "Help me out" link (here or on the launcher) flips this on
+  // — a quiet thank-you that skips the mail wait from then on. Honor system;
+  // it costs the player nothing and everything was free anyway.
+  function becomeSupporter(){
+    S.supporter = true;
+    try { localStorage.setItem(SUPPORT_KEY, "1"); } catch(e){}
+    var now = Date.now();
+    S.pendingOrders.forEach(function(o){
+      o.arrivesAt = new Date(now + SUPPORTER_DELAY_MS).toISOString();
+    });
+    processOrders();
+    refreshHUD();
+    if (document.getElementById("mailScrim").classList.contains("open")) buildMail();
+    saveState();
+  }
+  // launcher/help anchors carry data-help; one click = support unlock
+  document.addEventListener("click", function(e){
+    var a = e.target.closest && e.target.closest("[data-help]");
+    if (a && !isSupporter()) becomeSupporter();
+  });
+
+  // ---------- mailbox ----------
+  var mailBody=document.getElementById("mailBody");
+  function buildMail() {
+    mailBody.innerHTML="";
+    var ready = (S.mailWaiting||[]).filter(function(id){return BY_ID[id] && !S.placedItems[id];});
+    if (ready.length){
+      var rh=document.createElement("div"); rh.className="cat-title"; rh.textContent="ARRIVED — DRAG INTO THE ROOM";
+      mailBody.appendChild(rh);
+      ready.forEach(function(id){
+        var it=BY_ID[id];
+        var r=document.createElement("div"); r.className="mail-row ready";
+        r.appendChild(wareThumb(it));
+        var m=document.createElement("div"); m.className="meta";
+        m.innerHTML="<b>"+it.name+"</b><small>"+it.cat.toUpperCase()+"</small>"; r.appendChild(m);
+        if (it.place==="view" || it.place==="surface"){
+          var use=document.createElement("button"); use.className="stat here";
+          use.textContent = it.place==="view" ? "SET AS VIEW"
+            : (SURFACES[id].kind==="floor" ? "SET AS FLOOR" : "SET AS WALL");
+          use.style.cssText="border:2px solid #5c4a3a;background:#8fa67d;color:#3a3322;cursor:pointer;padding:6px 8px;font-family:var(--font-pixel)";
+          use.addEventListener("click", function(){
+            if (it.place==="view") applyView(id); else applyStyle(id);
+          });
+          r.appendChild(use);
+        } else {
+          var s=document.createElement("span"); s.className="stat here"; s.textContent="HERE"; r.appendChild(s);
+        }
+        mailBody.appendChild(r);
+      });
+    }
+    if (S.pendingOrders.length){
+      var ph=document.createElement("div"); ph.className="cat-title"; ph.textContent="ON ITS WAY";
+      mailBody.appendChild(ph);
+      S.pendingOrders.slice().sort(function(a,b){return Date.parse(a.arrivesAt)-Date.parse(b.arrivesAt);})
+      .forEach(function(o){
+        var it=BY_ID[o.itemId];
+        var r=document.createElement("div"); r.className="mail-row";
+        r.appendChild(wareThumb(BY_ID[o.itemId]));
+        var m=document.createElement("div"); m.className="meta";
+        m.innerHTML="<b>"+it.name+"</b><small>"+it.cat.toUpperCase()+"</small>"; r.appendChild(m);
+        var left=Date.parse(o.arrivesAt)-Date.now();
+        var s=document.createElement("span"); s.className="stat eta";
+        s.textContent = left<=0 ? "ARRIVING…" : ("~"+fmtLeft(left)+" LEFT");
+        r.appendChild(s);
+        mailBody.appendChild(r);
+      });
+      if (!isSupporter()){
+        var skip=document.createElement("div"); skip.className="mail-skip";
+        skip.innerHTML=
+          '<small>Don’t want to wait? Open any of these — a click skips the wait, for good.</small>'+
+          '<button type="button" class="skipbtn" id="skipToggle">♥ Help me out — skip the wait</button>'+
+          '<div class="skip-links" id="skipLinks" hidden>'+
+            '<a href="https://ko-fi.com/phantombandwidth" target="_blank" rel="noopener noreferrer" data-help>'+
+              '<b>ko-fi</b><span>buy me a coffee · directly supports this site</span></a>'+
+            '<a href="https://groups.google.com/g/folio_testers" target="_blank" rel="noopener noreferrer" data-help>'+
+              '<b>folio testers</b><span>help test Folio — a free, fully offline PDF viewer &amp; editor</span></a>'+
+            '<a href="https://groups.google.com/g/nothingapptesting" target="_blank" rel="noopener noreferrer" data-help>'+
+              '<b>nothing app testers</b><span>help test “nothing” — a gleefully useless parody app/game</span></a>'+
+          '</div>';
+        mailBody.appendChild(skip);
+        skip.querySelector("#skipToggle").addEventListener("click", function(){
+          var L=skip.querySelector("#skipLinks"); L.hidden=!L.hidden;
+        });
+      }
+    }
+    if (isSupporter()){
+      var th=document.createElement("div"); th.className="empty-note";
+      th.innerHTML="♥ thanks for the support — mail now arrives instantly.";
+      mailBody.appendChild(th);
+    }
+    if (!ready.length && !S.pendingOrders.length){
+      var n=document.createElement("div"); n.className="empty-note";
+      n.textContent="The mailbox is empty. Send away for something from the Catalog.";
+      mailBody.appendChild(n);
+    }
+  }
+  function fmtLeft(ms){
+    var h=Math.floor(ms/HOUR), m=Math.floor((ms%HOUR)/60000);
+    if (h>=1) return h+"h "+m+"m";
+    if (m>=1) return m+"m";
+    return Math.max(1,Math.ceil(ms/1000))+"s";
+  }
+  function applyView(id){
+    pushUndo();
+    // return the previously-active purchased view to inventory so it can be reused
+    if (S.activeView && S.activeView!=="view_clouds" && S.ownedItems.indexOf(S.activeView)===-1)
+      S.ownedItems.push(S.activeView);
+    S.activeView=id;
+    var idx=S.ownedItems.indexOf(id); if(idx!==-1) S.ownedItems.splice(idx,1);
+    clearMail(id);
+    refreshHUD(); buildMail();
+  }
+
+  // ---------- drag & drop ----------
+  var ghost=document.getElementById("ghost");
+  var dragging=null;
+  function canvasPt(e){
+    var r=canvas.getBoundingClientRect();
+    return {
+      x:(e.clientX-r.left)*(VW/r.width),
+      y:(e.clientY-r.top)*(VH/r.height)
+    };
+  }
+  function startDrag(e, id, from){
+    e.preventDefault();
+    hideMenu();
+    var flip = (from==="room" && S.placedItems[id]) ? !!S.placedItems[id].flip : false;
+    dragging={ id:id, from:from, flip:flip, preview:null };
+    // ghost matches the sprite's on-screen size in the room
+    var disp = (canvas.getBoundingClientRect().width / VW) * kof(id);
+    var box = spriteBox(id);
+    var gc = document.createElement("canvas");
+    gc.width = Math.max(1,Math.round(box[0]*disp)); gc.height = Math.max(1,Math.round(box[1]*disp));
+    var gx = gc.getContext("2d"); gx.imageSmoothingEnabled=false; gx.scale(disp,disp);
+    drawSprite(gx, id, 0, 0, flip);
+    ghost.src=gc.toDataURL(); ghost.style.display="block";
+    moveGhost(e);
+    if (from==="room"){ closeModals(); }
+    window.addEventListener("pointermove", onMove);
+    window.addEventListener("pointerup", onUp);
+  }
+  function moveGhost(e){ ghost.style.left=e.clientX+"px"; ghost.style.top=e.clientY+"px"; }
+  function onMove(e){
+    if (!dragging) return;
+    moveGhost(e);
+    var p=canvasPt(e);
+    var inside = p.x>=0&&p.x<=VW&&p.y>=0&&p.y<=VH;
+    if (inside){
+      var d=validDrop(BY_ID[dragging.id], p.x, p.y);
+      dragging.preview = d ? {x:d.x,y:d.y,s:d.s,ok:true} : null;
+    } else dragging.preview=null;
+  }
+  function onUp(e){
+    window.removeEventListener("pointermove", onMove);
+    window.removeEventListener("pointerup", onUp);
+    ghost.style.display="none";
+    if (!dragging){ return; }
+    var p=canvasPt(e);
+    var id=dragging.id, from=dragging.from;
+    var inStage = p.x>=-30&&p.x<=VW+30&&p.y>=-10&&p.y<=VH+40;
+    var d = (p.x>=0&&p.x<=VW&&p.y>=0&&p.y<=VH) ? validDrop(BY_ID[id], p.x, p.y) : null;
+    if (d || (from==="room" && !inStage)) pushUndo();
+    if (d){
+      var ent={ x:d.x, y:d.y, s:d.s, surf:d.surf, flip: !!dragging.flip, z: nextZ() };
+      if (d.surf==="furniture" && d.parent && d.parent!==id){
+        ent.parent=d.parent; ent.ox=d.ox; ent.oy=d.oy;
+      }
+      S.placedItems[id]=ent;
+      var oi=S.ownedItems.indexOf(id); if(oi!==-1) S.ownedItems.splice(oi,1);
+      clearMail(id);
+    } else if (from==="room" && !inStage){
+      // dropped outside → return to inventory (its passengers fall to the floor)
+      detachChildren(id);
+      delete S.placedItems[id];
+      if (S.ownedItems.indexOf(id)===-1) S.ownedItems.push(id);
+    }
+    dragging=null;
+    refreshHUD();
+  }
+  // topmost placed item under a canvas point
+  function hitTest(p){
+    var ids=Object.keys(S.placedItems).sort(function(a,b){
+      var za=S.placedItems[a].z||0, zb=S.placedItems[b].z||0;
+      if (za!==zb) return zb-za;                 // higher z first
+      return (S.placedItems[b].y) - (S.placedItems[a].y);
+    });
+    for (var i=0;i<ids.length;i++){
+      var id=ids[i], box=spriteBox(id), es=drawScaleOf(id), wx=worldX(id), wy=worldY(id);
+      if (p.x>=wx && p.x<=wx+box[0]*es && p.y>=wy && p.y<=wy+box[1]*es) return id;
+    }
+    return null;
+  }
+  function nextZ(){
+    var mx=0; for (var k in S.placedItems) mx=Math.max(mx, S.placedItems[k].z||0);
+    return mx+1;
+  }
+  function bottomZ(){
+    var mn=0; for (var k in S.placedItems) mn=Math.min(mn, S.placedItems[k].z||0);
+    return mn-1;
+  }
+  // a tap on empty space: the wall switch or the window
+  function tapAction(pt){
+    if (pt.x>SWITCH.x-6 && pt.x<SWITCH.x+SWITCH.w+6 &&
+        pt.y>SWITCH.y-6 && pt.y<SWITCH.y+SWITCH.h+6){
+      pushUndo(); S.roomLight = !S.roomLight; saveState(); return;
+    }
+    if (pt.x>WIN.x-12 && pt.x<WIN.x+WIN.w+12 && pt.y>WIN.y-12 && pt.y<WIN.y+WIN.h+8){
+      pushUndo();
+      S.curtains = S.curtains==="open" ? "sheer"
+                 : S.curtains==="sheer" ? "closed" : "open";
+      saveState();
+    }
+  }
+  // pick up placed items. On touch there is no right-click, so a press-and-
+  // hold opens the same options menu; a small move begins a drag; a quick
+  // tap toggles the switch/curtains.
+  canvas.addEventListener("pointerdown", function(e){
+    if (e.button!==0) return;
+    hideMenu();
+    var pt=canvasPt(e), id=hitTest(pt);
+    if (e.pointerType==="touch"){
+      var sx=e.clientX, sy=e.clientY, done=false;
+      var lp=setTimeout(function(){
+        if (done) return; done=true; clean();
+        if (id) showMenu(id, sx, sy); else showRoomMenu(sx, sy);
+      }, 480);
+      function clean(){ window.removeEventListener("pointermove",mv,true);
+        window.removeEventListener("pointerup",up,true); }
+      function mv(ev){
+        if (done) return;
+        if (Math.abs(ev.clientX-sx)+Math.abs(ev.clientY-sy)>10){
+          done=true; clearTimeout(lp); clean();
+          if (id) startDrag(e, id, "room");
+        }
+      }
+      function up(){
+        if (done) return; done=true; clearTimeout(lp); clean();
+        tapAction(pt);
+      }
+      window.addEventListener("pointermove",mv,true);
+      window.addEventListener("pointerup",up,true);
+      return;
+    }
+    if (id){ startDrag(e, id, "room"); return; }
+    tapAction(pt);
+  });
+
+  // ---------- multi-step undo / redo ----------
+  var undoStack=[], redoStack=[], UNDO_MAX=24;
+  function snapshot(){
+    return JSON.stringify({
+      placedItems:S.placedItems, ownedItems:S.ownedItems,
+      mailWaiting:S.mailWaiting, activeView:S.activeView,
+      activeFloor:S.activeFloor, activeWall:S.activeWall,
+      itemState:S.itemState, curtains:S.curtains, roomLight:S.roomLight
+    });
+  }
+  function applySnap(str){
+    try {
+      var u=JSON.parse(str);
+      S.placedItems=u.placedItems||{}; S.ownedItems=u.ownedItems||[];
+      S.mailWaiting=u.mailWaiting||[]; S.activeView=u.activeView||"view_clouds";
+      S.activeFloor=u.activeFloor||"floor_default";
+      S.activeWall=u.activeWall||"wall_default";
+      S.itemState=u.itemState||{}; S.curtains=u.curtains||"open";
+      if (u.roomLight!==undefined) S.roomLight=u.roomLight;
+    } catch(e){}
+  }
+  function pushUndo(){
+    try {
+      undoStack.push(snapshot());
+      if (undoStack.length>UNDO_MAX) undoStack.shift();
+      redoStack.length=0;
+    } catch(e){}
+  }
+  function doUndo(){
+    if (!undoStack.length) return;
+    redoStack.push(snapshot());
+    applySnap(undoStack.pop());
+    refreshHUD();
+  }
+  function doRedo(){
+    if (!redoStack.length) return;
+    undoStack.push(snapshot());
+    applySnap(redoStack.pop());
+    refreshHUD();
+  }
+  var tidyArmed=0;
+  function tidyUp(btn){
+    if (Date.now()-tidyArmed > 2500){      // two-tap confirm
+      tidyArmed=Date.now();
+      if (btn){ btn.childNodes[1].nodeValue="Tap again to confirm"; }
+      return false;
+    }
+    tidyArmed=0;
+    pushUndo();
+    Object.keys(S.placedItems).forEach(function(id){
+      if (S.ownedItems.indexOf(id)===-1) S.ownedItems.push(id);
+    });
+    S.placedItems={};
+    refreshHUD();
+    return true;
+  }
+
+  // ---------- right-click context menus ----------
+  var menu=document.getElementById("ctxMenu"), roomMenu=document.getElementById("ctxRoom"), menuId=null;
+  var ctxToggle=document.getElementById("ctxToggle");
+  function hideMenu(){ menu.style.display="none"; roomMenu.style.display="none"; menuId=null; }
+  function place(el,x,y){
+    var mw=el.offsetWidth||150, mh=el.offsetHeight||150;
+    el.style.left=Math.max(6, Math.min(x, window.innerWidth-mw-6))+"px";
+    el.style.top =Math.max(6, Math.min(y, window.innerHeight-mh-6))+"px";
+  }
+  function showMenu(id, x, y){
+    menuId=id; roomMenu.style.display="none"; menu.style.display="block";
+    if (toggleable(id)){
+      ctxToggle.style.display="flex";
+      var playing = (id==="radio"||id==="vinyl");
+      ctxToggle.childNodes[1].nodeValue = isOn(id)
+        ? (playing?"Stop":"Turn off") : (playing?"Play":"Turn on");
+    } else ctxToggle.style.display="none";
+    place(menu,x,y);
+  }
+  function showRoomMenu(x,y){ menu.style.display="none"; roomMenu.style.display="block"; place(roomMenu,x,y); }
+  canvas.addEventListener("contextmenu", function(e){
+    e.preventDefault();
+    var id=hitTest(canvasPt(e));
+    if (id) showMenu(id, e.clientX, e.clientY);
+    else showRoomMenu(e.clientX, e.clientY);
+  });
+  menu.addEventListener("click", function(e){
+    var ab=e.target && e.target.closest ? e.target.closest("button") : null;
+    var act=ab && ab.getAttribute("data-act");
+    if (!act || !menuId || !S.placedItems[menuId]) return hideMenu();
+    pushUndo();
+    var P=S.placedItems[menuId];
+    if (act==="flip")    P.flip=!P.flip;
+    if (act==="front")   P.z=nextZ();
+    if (act==="back")    P.z=bottomZ();
+    if (act==="toggle"){
+      if (!S.itemState) S.itemState={};
+      S.itemState[menuId]={ on: !isOn(menuId) };
+    }
+    if (act==="away"){
+      detachChildren(menuId);
+      delete S.placedItems[menuId];
+      if (S.ownedItems.indexOf(menuId)===-1) S.ownedItems.push(menuId);
+    }
+    hideMenu(); refreshHUD();
+  });
+  roomMenu.addEventListener("click", function(e){
+    var b=e.target && e.target.closest ? e.target.closest("button") : null;
+    var r=b && b.getAttribute("data-r");
+    if (r==="undo"){ doUndo(); hideMenu(); }
+    else if (r==="redo"){ doRedo(); hideMenu(); }
+    else if (r==="tidy"){ if (tidyUp(b)) hideMenu(); }   // keep open until confirmed
+  });
+  window.addEventListener("pointerdown", function(e){
+    if ((menu.style.display==="block"||roomMenu.style.display==="block")
+        && !menu.contains(e.target) && !roomMenu.contains(e.target)) hideMenu();
+  }, true);
+  window.addEventListener("blur", hideMenu);
+
+  // ---------- modals ----------
+  function openScrim(id){ document.getElementById(id).classList.add("open"); }
+  function closeModals(){
+    document.getElementById("shopScrim").classList.remove("open");
+    document.getElementById("mailScrim").classList.remove("open");
+    document.getElementById("setScrim").classList.remove("open");
+  }
+  document.getElementById("openShop").addEventListener("click", function(){ buildShop(); openScrim("shopScrim"); });
+  document.getElementById("openMail").addEventListener("click", function(){ buildMail(); openScrim("mailScrim"); });
+  // Grid snap lives in Settings only (no HUD button). Keep a null-safe
+  // syncGrid so any future HUD chip would still update if present.
+  var gridBtn=document.getElementById("gridToggle");
+  function syncGrid(){
+    if (!gridBtn) return;
+    gridBtn.childNodes[1].nodeValue = S.gridSnap ? "Grid: on" : "Grid: off";
+    gridBtn.style.background = S.gridSnap ? "var(--sage)" : "var(--panel-hi)";
+  }
+  if (gridBtn) gridBtn.addEventListener("click", function(){ S.gridSnap=!S.gridSnap; syncGrid(); saveState(); });
+
+  // ---------- settings ----------
+  var setBody=document.getElementById("setBody");
+  var SET_DEFS=[
+    { k:"sway",        title:"Plant sway",       desc:"GENTLE LEAF MOVEMENT" },
+    { k:"sound",       title:"Ambient sound",    desc:"RAIN FX · LO-FI FROM THE RADIO" },
+    { k:"reduceMotion",title:"Reduced motion",   desc:"FREEZE CLOUDS & DUST" },
+    { k:"blackout",    title:"Blackout curtains",desc:"CLOSED CURTAINS GO FULLY DARK" },
+    { k:"liveWx",      title:"Real local weather",desc:"USES YOUR LOCATION · US ONLY" },
+    { k:"accurateDaylight", title:"Accurate daylight", desc:"USES YOUR LOCATION FOR REAL SUNSET" },
+    { k:"grid",        title:"Grid snap",        desc:"SNAP PLACEMENT TO A TIDY GRID" }
+  ];
+  function getSet(k){ return k==="grid" ? !!S.gridSnap : !!(S.settings&&S.settings[k]); }
+  function setSet(k,v){
+    if (k==="grid"){ S.gridSnap=v; syncGrid(); }
+    else { if(!S.settings) S.settings={}; S.settings[k]=v; }
+    if (k==="sound") audioSync();
+    if (k==="liveWx"){ if(v) refreshWeather(true); else liveWxCond=null; }
+    if (k==="accurateDaylight" && v) ensureDaylight();
+    saveState();
+  }
+  function buildSettings(){
+    setBody.innerHTML="";
+    SET_DEFS.forEach(function(d){
+      var row=document.createElement("div"); row.className="setrow";
+      var m=document.createElement("div"); m.className="meta";
+      m.innerHTML="<b>"+d.title+"</b><small>"+d.desc+"</small>";
+      var t=document.createElement("button"); t.className="tgl";
+      function paint(){ var on=getSet(d.k); t.textContent=on?"ON":"OFF";
+        t.classList.toggle("on",on); }
+      paint();
+      t.addEventListener("click", function(){ setSet(d.k,!getSet(d.k)); paint(); });
+      row.appendChild(m); row.appendChild(t); setBody.appendChild(row);
+    });
+    // ---- save backup: export / import (room lives only in this browser) ----
+    var sv=document.createElement("div"); sv.className="setrow";
+    var sm=document.createElement("div"); sm.className="meta";
+    sm.innerHTML="<b>Your room</b><small>SAVED ON THIS DEVICE ONLY — BACK IT UP</small>";
+    var box=document.createElement("div");
+    box.style.cssText="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end";
+    function mkBtn(label){ var b=document.createElement("button"); b.className="tgl";
+      b.textContent=label; b.style.minWidth="0"; return b; }
+    var bExp=mkBtn("EXPORT"), bImp=mkBtn("IMPORT");
+    var fileIn=document.createElement("input");
+    fileIn.type="file"; fileIn.accept=".json,.txt,application/json,text/plain";
+    fileIn.style.display="none";
+    bExp.addEventListener("click", function(){
+      var data=localStorage.getItem(STORE_KEY)||JSON.stringify(S);
+      try {
+        var blob=new Blob([data],{type:"application/json"});
+        var a=document.createElement("a");
+        a.href=URL.createObjectURL(blob);
+        a.download="roomtone-save.json"; document.body.appendChild(a); a.click();
+        setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); },0);
+      } catch(e){}
+      if (navigator.clipboard) navigator.clipboard.writeText(data).then(function(){
+        sm.querySelector("small").textContent="EXPORTED — FILE SAVED + COPIED";
+      }, function(){ sm.querySelector("small").textContent="EXPORTED — FILE SAVED"; });
+      else sm.querySelector("small").textContent="EXPORTED — FILE SAVED";
+    });
+    bImp.addEventListener("click", function(){ fileIn.click(); });
+    fileIn.addEventListener("change", function(){
+      var f=fileIn.files&&fileIn.files[0]; if(!f) return;
+      var fr=new FileReader();
+      fr.onload=function(){
+        try {
+          var obj=JSON.parse(String(fr.result));
+          if (!obj || typeof obj!=="object" || !("stamps" in obj) || !("placedItems" in obj))
+            throw 0;
+          localStorage.setItem(STORE_KEY, JSON.stringify(obj));
+          location.reload();
+        } catch(e){
+          sm.querySelector("small").textContent="THAT FILE WASN’T A ROOMTONE SAVE";
+        }
+      };
+      fr.readAsText(f);
+    });
+    box.appendChild(bExp); box.appendChild(bImp);
+    sv.appendChild(sm); sv.appendChild(box); sv.appendChild(fileIn);
+    setBody.appendChild(sv);
+    // ---- help me out: support links, reachable any time (not only mail) ----
+    var hs=document.createElement("div"); hs.className="setrow";
+    var hsm=document.createElement("div"); hsm.className="meta";
+    hsm.innerHTML="<b>Help me out</b><small>"+(isSupporter()
+      ? "♥ THANKS — MAIL ALREADY ARRIVES INSTANTLY"
+      : "OPEN ANY LINK · IT ALSO SKIPS THE MAIL WAIT, FOR GOOD")+"</small>";
+    hs.appendChild(hsm); setBody.appendChild(hs);
+    if (!isSupporter()){
+      var hl=document.createElement("div"); hl.className="skip-links";
+      hl.style.cssText="width:100%;margin:2px 0 4px";
+      hl.innerHTML=
+        '<a href="https://ko-fi.com/phantombandwidth" target="_blank" rel="noopener noreferrer" data-help>'+
+          '<b>ko-fi</b><span>buy me a coffee · directly supports this site</span></a>'+
+        '<a href="https://groups.google.com/g/folio_testers" target="_blank" rel="noopener noreferrer" data-help>'+
+          '<b>folio testers</b><span>help test Folio — a free, fully offline PDF viewer &amp; editor</span></a>'+
+        '<a href="https://groups.google.com/g/nothingapptesting" target="_blank" rel="noopener noreferrer" data-help>'+
+          '<b>nothing app testers</b><span>help test “nothing” — a gleefully useless parody app/game</span></a>';
+      setBody.appendChild(hl);
+    }
+  }
+  document.getElementById("openSettings").addEventListener("click",
+    function(){ buildSettings(); openScrim("setScrim"); });
+
+  // ---------- ambient audio (off by default; behind the Sound setting) ----------
+  // The room's rain FX is synthesized/sampled here (own AudioContext). The
+  // generative lo-fi *music* is window.LofiEngine — Roomtone owns its
+  // transport (driven by the radio/vinyl item below), so disable the
+  // engine's own first-gesture autoplay and never touch its saved pref.
+  if (window.LofiEngine) window.LofiEngine.setAutoplay(false);
+  var actx=null, rainGain=null, musicGain=null, audioReady=false;
+  var synthRainGain=null, sampleRainGain=null, rainSampleTried=false;
+  function ensureAudio(){
+    if (audioReady) return;
+    try {
+      var AC=window.AudioContext||window.webkitAudioContext; if(!AC) return;
+      actx=new AC();
+      var buf=actx.createBuffer(1, actx.sampleRate*2, actx.sampleRate);
+      var dd=buf.getChannelData(0);
+      for (var i=0;i<dd.length;i++) dd[i]=(Math.random()*2-1)*0.4;
+      // a second, independent noise buffer so the deep "body" and the
+      // higher "patter" aren't perfectly correlated — sounds less like flat hiss
+      var buf2=actx.createBuffer(1, actx.sampleRate*2, actx.sampleRate);
+      var dd2=buf2.getChannelData(0);
+      for (var j=0;j<dd2.length;j++) dd2[j]=(Math.random()*2-1)*0.4;
+      var rs=actx.createBufferSource();  rs.buffer=buf;   rs.loop=true;
+      var rs2=actx.createBufferSource(); rs2.buffer=buf2; rs2.loop=true;
+      rainGain=actx.createGain(); rainGain.gain.value=0;          // master rain bus
+      // two sub-buses: real recording (primary) crossfades in over the synth
+      // rain, which stays as the offline / load-failure fallback
+      synthRainGain=actx.createGain();  synthRainGain.gain.value=1;  synthRainGain.connect(rainGain);
+      sampleRainGain=actx.createGain(); sampleRainGain.gain.value=0; sampleRainGain.connect(rainGain);
+      // deep body: low rumble with a slow intensity drift
+      var lpBody=actx.createBiquadFilter(); lpBody.type="lowpass"; lpBody.frequency.value=480;
+      var bodyGain=actx.createGain(); bodyGain.gain.value=0.62;
+      rs.connect(lpBody).connect(bodyGain).connect(synthRainGain);
+      // patter: brighter band, gain swelled by a slow LFO → gusts that breathe
+      var bpPat=actx.createBiquadFilter(); bpPat.type="bandpass";
+      bpPat.frequency.value=2400; bpPat.Q.value=0.7;
+      var patGain=actx.createGain(); patGain.gain.value=0.5;
+      rs2.connect(bpPat).connect(patGain).connect(synthRainGain);
+      var lfo=actx.createOscillator(); lfo.type="sine"; lfo.frequency.value=0.06;
+      var lfoDepth=actx.createGain(); lfoDepth.gain.value=0.42;
+      lfo.connect(lfoDepth).connect(patGain.gain);              // ±0.42 swell
+      var lfo2=actx.createOscillator(); lfo2.type="sine"; lfo2.frequency.value=0.021;
+      var lfo2Depth=actx.createGain(); lfo2Depth.gain.value=0.16;
+      lfo2.connect(lfo2Depth).connect(bodyGain.gain);           // slow body drift
+      rainGain.connect(actx.destination);
+      rs.start(); rs2.start(); lfo.start(); lfo2.start();
+      musicGain=actx.createGain(); musicGain.gain.value=0; musicGain.connect(actx.destination);
+      [196.00, 246.94, 293.66].forEach(function(f){
+        var o=actx.createOscillator(); o.type="sine"; o.frequency.value=f;
+        var g=actx.createGain(); g.gain.value=0.34;
+        o.connect(g).connect(musicGain); o.start();
+      });
+      audioReady=true;
+      loadRainSample();
+    } catch(e){ audioReady=false; }
+  }
+  // Pull the real rain recording in once; on success crossfade it over the
+  // synth rain. Any failure (offline first-load, decode error) silently leaves
+  // the synth rain as the fallback. Gated entirely by rainGain (audioSync),
+  // so this stays off unless Sound is on and the weather is rain.
+  function loadRainSample(){
+    if (rainSampleTried || !actx) return; rainSampleTried=true;
+    fetch("roomtone/rain.mp3").then(function(r){
+      if(!r.ok) throw 0; return r.arrayBuffer();
+    }).then(function(ab){
+      return new Promise(function(res,rej){
+        var p=actx.decodeAudioData(ab, res, rej);   // Safari uses the callback form
+        if (p && p.then) p.then(res, rej);
+      });
+    }).then(function(audioBuf){
+      if (!sampleRainGain) return;
+      var src=actx.createBufferSource(); src.buffer=audioBuf; src.loop=true;
+      src.connect(sampleRainGain); src.start();
+      var t=actx.currentTime;
+      sampleRainGain.gain.setTargetAtTime(1, t, 1.5);
+      synthRainGain.gain.setTargetAtTime(0, t, 1.5);
+    }).catch(function(){ /* keep synth rain as fallback */ });
+  }
+  function anyPlaying(){
+    return Object.keys(S.placedItems).some(function(id){
+      return (id==="radio"||id==="vinyl") && isOn(id);
+    });
+  }
+  function audioSync(){
+    var want = S.settings && S.settings.sound;
+    // Generative lo-fi music: plays when Sound is on AND a radio/vinyl item
+    // is on. Engine owns its own AudioContext, so drive it independently of
+    // the rain context's readiness.
+    if (window.LofiEngine){
+      if (want && anyPlaying()) window.LofiEngine.play();
+      else window.LofiEngine.pause();
+    }
+    if (!want){ if(rainGain)rainGain.gain.value=0; if(musicGain)musicGain.gain.value=0; return; }
+    ensureAudio(); if(!audioReady) return;
+    if (actx.state==="suspended") actx.resume();
+    var t=actx.currentTime;
+    rainGain.gain.setTargetAtTime(weatherNow()==="rain"?0.05:0, t, 2);
+    musicGain.gain.value=0;   // synth drone retired — LofiEngine is the music
+  }
+  // browsers need a gesture before audio; wire one-time
+  window.addEventListener("pointerdown", function once(){
+    window.removeEventListener("pointerdown", once, true);
+    if (S.settings && S.settings.sound) audioSync();
+  }, true);
+  setInterval(audioSync, 30000);   // follow weather/radio over time
+
+  var firstHintEl=document.getElementById("firstHint");
+  function dismissHint(){ firstHintEl.style.display="none"; S.seenHint=true; saveState(); }
+  document.getElementById("hintClose").addEventListener("click", dismissHint);
+  document.getElementById("openHelp").addEventListener("click", function(){
+    closeModals(); hideMenu(); firstHintEl.style.display="block";
+  });
+  Array.prototype.forEach.call(document.querySelectorAll("[data-close]"), function(b){
+    b.addEventListener("click", function(){ document.getElementById(b.dataset.close).classList.remove("open"); });
+  });
+  Array.prototype.forEach.call(document.querySelectorAll(".scrim"), function(s){
+    s.addEventListener("click", function(e){ if(e.target===s){ s.classList.remove("open"); } });
+  });
+
+  // refresh "on its way" timers while the mailbox is open
+  setInterval(function(){
+    if (document.getElementById("mailScrim").classList.contains("open")){
+      processOrders(); buildMail(); refreshHUD();
+    }
+  }, 30000);
+  // catch arrivals during a long session
+  setInterval(function(){ processOrders(); refreshHUD(); }, 60000);
+
+  // helpers for authored placements in the new (scaled) model
+  function placeFloor(id, footY, cx, z){
+    var b=spriteBox(id), s=floorScale(footY), k=kof(id);
+    return { x:Math.round(cx-b[0]*s*k/2), y:Math.round(footY-b[1]*s*k),
+             s:s, surf:"floor", flip:false, z:z };
+  }
+  function placeShelf(id, cx, z){
+    var b=spriteBox(id), k=kof(id), w=b[0]*k;
+    return { x:Math.round(clamp(cx-w/2, SHELF.x-2, SHELF.x+SHELF.w-w+2)),
+             y:Math.round(SHELF.y-b[1]*k+1), s:1, surf:"shelf", flip:false, z:z };
+  }
+  function placeWall(id, x, y, z){
+    return { x:x, y:y, s:1, surf:"wall", flip:false, z:z };
+  }
+  // fill in s/surf for any legacy entries so old saves keep working
+  function normalizePlaced(){
+    Object.keys(S.placedItems).forEach(function(id){
+      var p=S.placedItems[id]; if(!p||!BY_ID[id]){ delete S.placedItems[id]; return; }
+      if (typeof p.s!=="number") p.s=1;
+      if (!p.surf){
+        var a=SURF_BY_ID[id]||[BY_ID[id].place];
+        p.surf = a.indexOf("wall")!==-1 ? "wall" : (a[0]==="floor" ? "floor" : "shelf");
+      }
+      if (typeof p.z!=="number") p.z=0;
+    });
+  }
+
+  // ---------- boot ----------
+  var _hadSave = !!localStorage.getItem(STORE_KEY);
+  S = loadState();
+  var _awayMs = 0;
+  try { var _lv=Date.parse(S.lastVisit);
+    if (isFinite(_lv)) _awayMs = Date.now()-_lv; } catch(e){}
+  var wasAway = _hadSave && _awayMs > 2*24*3600000;   // returned after 2+ days
+  accrue();
+  processOrders();
+  // first-ever visitor: a furnished-enough start + things to place,
+  // so the room reads as a cozy home from the very first visit
+  if (!localStorage.getItem(STORE_KEY) && S.ownedItems.length===0 &&
+      Object.keys(S.placedItems).length===0 && S.pendingOrders.length===0) {
+    S.placedItems = {
+      rug:       placeFloor("rug", 300, VW*0.55, 1),
+      fiddle:    placeFloor("fiddle", 286, 74, 2),
+      succulent: placeShelf("succulent", SHELF.x+26, 3),
+      print:     placeWall("print", WIN.x-70, 70, 4)
+    };
+    // a small drawer of things to decorate with right away
+    S.ownedItems = ["poster","candle","mug","books","floorlamp","hangvine","clock","radio"];
+    // honour the visitor's OS "reduce motion" preference by default
+    try {
+      if (window.matchMedia &&
+          window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        S.settings.reduceMotion = true;
+      }
+    } catch(e){}
+  }
+  normalizePlaced();
+  refreshHUD();
+  syncGrid();
+  if (!S.seenHint) firstHintEl.style.display="block";
+  else if (wasAway){
+    var an=document.getElementById("awayNote");
+    var days=Math.floor(_awayMs/86400000);
+    an.textContent="it's been "+(days>=1?days+" day"+(days>1?"s":""):"a while")+
+      " — the room kept the light for you. welcome back.";
+    an.hidden=false;
+    var hideAway=function(){ an.style.opacity="0";
+      setTimeout(function(){ an.hidden=true; an.style.opacity=""; },1300); };
+    an.addEventListener("click", hideAway);
+    setTimeout(hideAway, 11000);
+  }
+  saveState();
+  if (S.settings && S.settings.liveWx) refreshWeather();   // uses cache; no prompt unless stale
+  if (S.settings && S.settings.accurateDaylight) ensureDaylight();
+  setInterval(function(){ refreshWeather(); }, WX_TTL);     // keep it current while open
+  requestAnimationFrame(frame);
+  // note: no beforeunload save — every mutation persists immediately,
+  // and lastVisit is recomputed from storage on the next load.
+})();
+</script>
+<script>
+  if ("serviceWorker" in navigator)
+    addEventListener("load", function(){ navigator.serviceWorker.register("sw.js").catch(function(){}); });
+</script>
+</body>
+</html>

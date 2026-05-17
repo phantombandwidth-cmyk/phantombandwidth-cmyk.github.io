@@ -53,7 +53,7 @@
   }
 
   function softCurve() {
-    var n = 1024, c = new Float32Array(n), k = 2.2;
+    var n = 1024, c = new Float32Array(n), k = 1.1;
     for (var i = 0; i < n; i++) {
       var x = (i / (n - 1)) * 2 - 1;
       c[i] = Math.tanh(k * x) / Math.tanh(k);   // gentle warm saturation
@@ -86,24 +86,32 @@
 
     // music (pads/keys/bass/lead/chops) ducks under the kick; drums + texture don't
     musicDuck = ctx.createGain(); musicDuck.gain.value = 1;
-    drumsBus  = ctx.createGain(); drumsBus.gain.value = 0.95;
-    texBus    = ctx.createGain(); texBus.gain.value = 0.5;
+    drumsBus  = ctx.createGain(); drumsBus.gain.value = 0.62;
+    texBus    = ctx.createGain(); texBus.gain.value = 0.34;
 
     reverb = ctx.createConvolver(); reverb.buffer = impulse(2.4, 2.6);
-    revReturn = ctx.createGain(); revReturn.gain.value = 0.55;
+    revReturn = ctx.createGain(); revReturn.gain.value = 0.34;
+
+    // headroom before the saturator so the tanh stays warm, not crushed —
+    // then a gentle limiter catches stray peaks instead of clipping the DAC
+    var trim = ctx.createGain(); trim.gain.value = 0.30;
+    var comp = ctx.createDynamicsCompressor();
+    comp.threshold.value = -10; comp.knee.value = 6; comp.ratio.value = 12;
+    comp.attack.value = 0.003; comp.release.value = 0.20;
 
     musicDuck.connect(mixBus);
     drumsBus.connect(mixBus);
     texBus.connect(mixBus);
     reverb.connect(revReturn).connect(mixBus);
-    mixBus.connect(sat).connect(toneLP).connect(master).connect(ctx.destination);
+    mixBus.connect(trim).connect(sat).connect(toneLP)
+          .connect(comp).connect(master).connect(ctx.destination);
 
     // shared wow (slow pitch drift) + flutter (fast shallow) → osc.detune
     wowLFO = ctx.createOscillator(); wowLFO.type = "sine"; wowLFO.frequency.value = 0.27;
-    wowDepth = ctx.createGain(); wowDepth.gain.value = 7;        // cents
+    wowDepth = ctx.createGain(); wowDepth.gain.value = 4;        // cents
     wowLFO.connect(wowDepth); wowLFO.start();
     flutLFO = ctx.createOscillator(); flutLFO.type = "sine"; flutLFO.frequency.value = 5.3;
-    flutDepth = ctx.createGain(); flutDepth.gain.value = 2.5;
+    flutDepth = ctx.createGain(); flutDepth.gain.value = 1.1;
     flutLFO.connect(flutDepth); flutLFO.start();
 
     ready = true;
@@ -169,16 +177,23 @@
   // ---- music theory --------------------------------------------------------
   function mtof(m) { return 440 * Math.pow(2, (m - 69) / 12); }
   var SCALES = {
-    aeolian: [0, 2, 3, 5, 7, 8, 10],
-    dorian:  [0, 2, 3, 5, 7, 9, 10]
+    aeolian:  [0, 2, 3, 5, 7, 8, 10],
+    dorian:   [0, 2, 3, 5, 7, 9, 10],
+    phrygian: [0, 1, 3, 5, 7, 8, 10],   // dark, Spanish-tinged b2
+    harmonic: [0, 2, 3, 5, 7, 8, 11]    // jazzy raised-7th tension
   };
+  var SCALE_NAMES = ["aeolian", "dorian", "phrygian", "harmonic"];
   // progressions as 0-based scale degrees (minor-leaning lo-fi staples)
   var PROGS = [
     [0, 3, 6, 2],   // i  iv VII III
     [0, 5, 2, 6],   // i  VI III VII
     [1, 4, 0, 0],   // ii V  i   i
     [0, 4, 5, 3],   // i  v  VI  iv
-    [0, 2, 3, 5]    // i  III iv VI
+    [0, 2, 3, 5],   // i  III iv VI
+    [0, 6, 5, 4],   // i  VII VI v
+    [0, 3, 4, 0],   // i  iv v  i
+    [5, 1, 4, 0],   // VI ii V  i
+    [0, 2, 5, 4]    // i  III VI v
   ];
   var LEADS = ["rhodes", "guitar", "glock", "vocal"];
 
@@ -197,25 +212,66 @@
 
   // ---- per-track generative config ----------------------------------------
   var cfg = null;
+  // remember the last track so the next one is audibly different, not a reroll
+  // that happens to land on the same key/scale/lead/progression.
+  var prevTrack = { scale: "", progIdx: -1, lead: "", root: -1 };
+  function pickDiff(arr, prev) {
+    if (arr.length < 2) return arr[0];
+    var v, i = 0;
+    do { v = arr[(Math.random() * arr.length) | 0]; i++; }
+    while (v === prev && i < 8);
+    return v;
+  }
   function newConfig() {
-    var bpm = 70 + Math.floor(Math.random() * 21);          // 70-90
-    var scaleName = Math.random() < 0.45 ? "dorian" : "aeolian";
-    var root = 45 + Math.floor(Math.random() * 8);          // A2-ish region
-    var prog = PROGS[(Math.random() * PROGS.length) | 0];
+    var bpm = 68 + Math.floor(Math.random() * 25);          // 68-92
+    var scaleName = pickDiff(SCALE_NAMES, prevTrack.scale);
+    var root;
+    do { root = 43 + Math.floor(Math.random() * 11); }      // F2..E3 region
+    while (Math.abs(root - prevTrack.root) < 2 && Math.random() < 0.85);
+    var progIdx;
+    do { progIdx = (Math.random() * PROGS.length) | 0; }
+    while (progIdx === prevTrack.progIdx && PROGS.length > 1);
+    var lead = pickDiff(LEADS, prevTrack.lead);
     var barDur = (60 / bpm) * 4;
     var barsPerChord = Math.random() < 0.5 ? 1 : 2;
     var trackSec = 120 + Math.random() * 180;               // 2-5 min
     var totalBars = Math.max(32, Math.round(trackSec / barDur));
+    prevTrack = { scale: scaleName, progIdx: progIdx, lead: lead, root: root };
     return {
-      bpm: bpm, scale: SCALES[scaleName], root: root, prog: prog,
+      bpm: bpm, scale: SCALES[scaleName], scaleName: scaleName,
+      root: root, prog: PROGS[progIdx],
       barDur: barDur, barsPerChord: barsPerChord,
-      totalBars: totalBars, transBars: 8,
-      lead: LEADS[(Math.random() * LEADS.length) | 0],
+      totalBars: totalBars, transBars: 4,
+      lead: lead,
       kickPat: (Math.random() * 3) | 0,
-      swing: 0.55 + Math.random() * 0.07,                   // 0.55-0.62
+      swing: 0.54 + Math.random() * 0.09,                   // 0.54-0.63
+      // per-track timbre macros — these are what make each track its own vibe
+      toneHz: 5200 + Math.random() * 3600,                  // master warmth 5.2-8.8k
+      revAmt: 0.22 + Math.random() * 0.22,                  // reverb depth 0.22-0.44
+      padHz:  1250 + Math.random() * 1050,                  // pad colour 1.25-2.3k
+      dens:   0.78 + Math.random() * 0.42,                  // busyness 0.78-1.20
       vinylIdx: LIB.vinyl.length ? (Math.random() * LIB.vinyl.length) | 0 : -1,
       bar: 0
     };
+  }
+  // push this track's tone/reverb macros onto the shared chain (smoothed so
+  // the change rides in over the seam rather than clicking)
+  function applyTrack() {
+    if (!ctx || !toneLP || !revReturn || !cfg) return;
+    var t = ctx.currentTime;
+    toneLP.frequency.setTargetAtTime(cfg.toneHz, t, 0.3);
+    revReturn.gain.setTargetAtTime(cfg.revAmt, t, 0.3);
+  }
+
+  // --- track-change notification (host shows a "now playing" caption) ---
+  var onTrackCb = null;
+  function trackInfo() {
+    if (!cfg) return null;
+    return { lead: cfg.lead, bpm: cfg.bpm, scale: cfg.scaleName,
+             label: cfg.lead + " · " + cfg.bpm + " bpm" };
+  }
+  function fireTrack() {
+    if (onTrackCb) { try { onTrackCb(trackInfo()); } catch (e) {} }
   }
 
   // ---- voices --------------------------------------------------------------
@@ -236,7 +292,7 @@
   function pad(freqs, t, dur) {
     var g = ctx.createGain(); g.gain.value = 0.0001;
     var lp = ctx.createBiquadFilter();
-    lp.type = "lowpass"; lp.frequency.value = 1700; lp.Q.value = 0.3;
+    lp.type = "lowpass"; lp.frequency.value = (cfg && cfg.padHz) || 1700; lp.Q.value = 0.3;
     g.connect(lp).connect(musicDuck);
     sendReverb(g, 0.45);
     adsr(g.gain, t, 0.10, 0.9, 0.6, 0.7, dur, 1.1);
@@ -354,7 +410,7 @@
   }
 
   function kick(t) {
-    if (LIB.kick.length) { smp(pick(LIB.kick), t, 0.95); duck(t); return; }
+    if (LIB.kick.length) { smp(pick(LIB.kick), t, 0.7); duck(t); return; }
     // synth fallback only if no samples (kept minimal; samples are the path)
     var o = ctx.createOscillator(); o.frequency.setValueAtTime(150, t);
     o.frequency.exponentialRampToValueAtTime(45, t + 0.12);
@@ -366,6 +422,7 @@
 
   // ---- scheduler -----------------------------------------------------------
   var running = false, timer = null, step16 = 0, nextTime = 0, started = false;
+  var skipping = false;
 
   function chordForBar(barIndex) {
     var slot = Math.floor((barIndex / cfg.barsPerChord)) % cfg.prog.length;
@@ -376,7 +433,7 @@
   function scheduleStep(s, t) {
     var bar = cfg.bar;
     var inTrans = bar >= cfg.totalBars - cfg.transBars;
-    var dens = inTrans ? 0.35 : 1;                       // thin out toward the seam
+    var dens = (inTrans ? 0.7 : 1) * (cfg.dens || 1);    // per-track busyness; thins gently at the seam
     var chord = chordForBar(bar);
 
     // --- drums (boom-bap, swung, humanized, slightly behind) ---
@@ -433,21 +490,54 @@
     }
   }
 
-  function nextTrack() {
-    cfg = newConfig();
-    swapVinyl();
+  // Shared crossfade-style transition: dip the master, swap to a fresh
+  // config + vinyl while it's quiet, then ride back up. Used by BOTH the
+  // automatic end-of-track seam and the manual skip, so every track change
+  // feels like a mix transition rather than a hard cut. The 4-bar density
+  // thin-out already in scheduleStep leads into this dip.
+  function transition(outS, holdMs, inS) {
+    if (!running || skipping || !ctx) return;
+    skipping = true;
+    var t = ctx.currentTime;
+    master.gain.cancelScheduledValues(t);
+    master.gain.setValueAtTime(master.gain.value, t);
+    master.gain.linearRampToValueAtTime(0.0001, t + outS);
+    setTimeout(function () {
+      if (!running) { skipping = false; return; }
+      cfg = newConfig(); step16 = 0;
+      nextTime = ctx.currentTime + 0.1;
+      applyTrack();
+      swapVinyl();
+      fireTrack();
+      var t2 = ctx.currentTime;
+      master.gain.cancelScheduledValues(t2);
+      master.gain.setValueAtTime(0.0001, t2);
+      master.gain.linearRampToValueAtTime(prefs.vol, t2 + inS);
+      skipping = false;
+    }, holdMs);
   }
+  // automatic end-of-track seam: gentler/quicker than a manual skip
+  function nextTrack() { transition(0.32, 360, 0.7); }
 
   // ---- texture (vinyl crackle loop + tape hiss; synth backup) -------------
-  var vinylSrc = null, hissNode = null;
+  var vinylSrc = null, vinylGain = null, vinylBuf = null, hissNode = null;
   function swapVinyl() {
-    if (vinylSrc) { try { vinylSrc.stop(); } catch (e) {} vinylSrc = null; }
-    var t = ctx.currentTime + 0.05;
+    var t = ctx.currentTime;
     if (LIB.vinyl.length) {
       var b = LIB.vinyl[(Math.random() * LIB.vinyl.length) | 0];
+      if (b === vinylBuf && vinylSrc) return;        // already on this loop — no needless swap
+      var old = vinylSrc, oldG = vinylGain;
+      if (old && oldG) {                             // cross-fade, never a gap in the crackle
+        oldG.gain.cancelScheduledValues(t);
+        oldG.gain.setValueAtTime(oldG.gain.value, t);
+        oldG.gain.linearRampToValueAtTime(0.0001, t + 0.6);
+        try { old.stop(t + 0.65); } catch (e) {}
+      }
       var s = ctx.createBufferSource(); s.buffer = b; s.loop = true;
-      var g = ctx.createGain(); g.gain.value = 0.5;
-      s.connect(g).connect(texBus); s.start(t); vinylSrc = s;
+      var g = ctx.createGain(); g.gain.value = old ? 0.0001 : 0.5;
+      s.connect(g).connect(texBus); s.start(t);
+      if (old) g.gain.linearRampToValueAtTime(0.5, t + 0.6);
+      vinylSrc = s; vinylGain = g; vinylBuf = b;
     } else if (!hissNode) {
       // synthesized crackle/hiss backup when no texture samples exist
       var len = ctx.sampleRate * 2;
@@ -480,11 +570,13 @@
     if (running) return true;
     if (ctx.state === "suspended") ctx.resume();
     if (!cfg) cfg = newConfig();
+    applyTrack();
     swapVinyl();
     step16 = 0;
     nextTime = ctx.currentTime + 0.15;
     running = true; started = true;
     timer = setInterval(scheduler, TICK);
+    fireTrack();                       // announce the opening track
     return true;
   }
 
@@ -492,6 +584,7 @@
     running = false;
     if (timer) { clearInterval(timer); timer = null; }
     if (vinylSrc) { try { vinylSrc.stop(); } catch (e) {} vinylSrc = null; }
+    vinylGain = null; vinylBuf = null;
     if (hissNode) { try { hissNode.stop(); } catch (e) {} hissNode = null; }
     if (master && ctx) {
       var t = ctx.currentTime;
@@ -541,12 +634,11 @@
     // Stop AND opt out (persisted) so site music stays quiet next visit.
     stop: function () { prefs.enabled = false; persist(); pause(); },
     // Jump immediately to a fresh generative track.
-    skip: function () {
-      if (!running) return;
-      cfg = newConfig(); step16 = 0;
-      nextTime = ctx.currentTime + 0.1;
-      swapVinyl();
-    },
+    skip: function () { transition(0.5, 560, 0.6); },
+    // current track descriptor, or null when stopped
+    nowPlaying: function () { return trackInfo(); },
+    // host hook: called with trackInfo() whenever the track changes
+    onTrack: function (fn) { onTrackCb = (typeof fn === "function") ? fn : null; },
     // 0..1; persists across sessions.
     setVolume: function (v) {
       v = Math.min(1, Math.max(0, +v || 0));

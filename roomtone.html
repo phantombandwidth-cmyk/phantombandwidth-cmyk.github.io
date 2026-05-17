@@ -152,6 +152,26 @@
     transition: opacity 1.2s ease;
   }
   #awayNote[hidden] { display: none; }
+  #toast {
+    position: absolute; right: 12px; bottom: 12px; max-width: 56%;
+    font-family: var(--font-mono); font-size: 0.56rem; line-height: 1.55;
+    color: var(--brown); background: var(--paper);
+    border: 2px solid var(--brown);
+    box-shadow: 3px 3px 0 rgba(43,37,51,0.35);
+    padding: 9px 11px; opacity: 0; pointer-events: none;
+    transition: opacity 0.55s ease;
+  }
+  #toast.show { opacity: 1; }
+  #npHint {
+    position: absolute; right: 12px; top: 12px; max-width: 52%;
+    font-family: var(--font-mono); font-size: 0.52rem; line-height: 1.5;
+    letter-spacing: 0.06em; color: var(--brown-soft);
+    background: var(--paper); border: 2px solid var(--brown);
+    box-shadow: 3px 3px 0 rgba(43,37,51,0.3);
+    padding: 6px 10px; opacity: 0; pointer-events: none;
+    transition: opacity 0.7s ease;
+  }
+  #npHint.show { opacity: 0.92; }
   #firstHint b { font-weight: 600; }
   #firstHint em { font-style: normal; color: var(--ink); font-weight: 600; }
   #firstHint button {
@@ -226,6 +246,9 @@
     cursor: grab;
     box-shadow: 2px 2px 0 rgba(92,74,58,0.22);
     user-select: none;
+    /* let the pointer-drag own the touch — without this, mobile treats the
+       drag as a page scroll and the item never leaves the drawer */
+    touch-action: none;
   }
   .inv-item:active { cursor: grabbing; }
   .inv-item canvas { display: block; margin: 0 auto 4px; image-rendering: pixelated; }
@@ -281,6 +304,21 @@
   }
   .setrow .tgl.on { background: var(--sage); }
   .setrow .tgl:active { transform: translate(2px,2px); box-shadow: none; }
+  .setrow input[type=range].vol {
+    flex: none; width: 116px; height: 14px; cursor: pointer;
+    -webkit-appearance: none; appearance: none;
+    background: var(--paper-deep); border: 2px solid var(--brown);
+    box-shadow: 2px 2px 0 rgba(92,74,58,0.3);
+  }
+  .setrow input[type=range].vol::-webkit-slider-thumb {
+    -webkit-appearance: none; appearance: none;
+    width: 14px; height: 18px; background: var(--sage);
+    border: 2px solid var(--brown); cursor: pointer;
+  }
+  .setrow input[type=range].vol::-moz-range-thumb {
+    width: 14px; height: 18px; background: var(--sage);
+    border: 2px solid var(--brown); cursor: pointer;
+  }
   .shelf-row {
     display: grid; grid-template-columns: repeat(auto-fill, minmax(212px,1fr));
     gap: 10px;
@@ -438,6 +476,8 @@
         <button id="hintClose">got it</button>
       </div>
       <div id="awayNote" hidden></div>
+      <div id="toast" aria-live="polite"></div>
+      <div id="npHint" aria-live="polite"></div>
     </div>
 
     <div class="hud">
@@ -502,6 +542,7 @@
   <div id="ctxMenu">
     <div class="mhdr">THIS THING</div>
     <button data-act="toggle" id="ctxToggle" style="display:none"><span class="sq"></span>Turn on</button>
+    <button data-act="next" id="ctxNext" style="display:none"><span class="sq"></span>Next track</button>
     <button data-act="flip"><span class="sq"></span>Flip</button>
     <button data-act="front"><span class="sq"></span>Bring forward</button>
     <button data-act="back"><span class="sq"></span>Send back</button>
@@ -568,6 +609,37 @@
     { id:"books",      name:"Stack of Books",cat:"Shelf",     tier:"common",  cost:5,  place:"shelf" },
     { id:"radio",      name:"Small Radio",  cat:"Shelf",      tier:"mid",     cost:12, place:"shelf", starter:true },
     { id:"vinyl",      name:"Vinyl Player", cat:"Shelf",      tier:"premium", cost:28, place:"shelf" },
+    // --- expansion: 30 more pieces ---
+    { id:"armchair",   name:"Armchair",     cat:"Furniture",  tier:"premium", cost:28, place:"floor" },
+    { id:"bookshelf",  name:"Bookshelf",    cat:"Furniture",  tier:"premium", cost:30, place:"floor" },
+    { id:"coffeetable",name:"Coffee Table", cat:"Furniture",  tier:"mid",     cost:14, place:"floor" },
+    { id:"floorcushion",name:"Floor Cushion",cat:"Furniture", tier:"mid",     cost:12, place:"floor" },
+    { id:"ottoman",    name:"Ottoman",      cat:"Furniture",  tier:"mid",     cost:11, place:"floor" },
+    { id:"screen",     name:"Folding Screen",cat:"Furniture", tier:"premium", cost:26, place:"floor" },
+    { id:"lantern",    name:"Paper Lantern",cat:"Lighting",   tier:"mid",     cost:12, place:"floor" },
+    { id:"saltlamp",   name:"Salt Lamp",    cat:"Lighting",   tier:"mid",     cost:13, place:"shelf" },
+    { id:"fairyjar",   name:"Fairy Jar",    cat:"Lighting",   tier:"common",  cost:5,  place:"shelf" },
+    { id:"arclamp",    name:"Arc Lamp",     cat:"Lighting",   tier:"premium", cost:30, place:"floor" },
+    { id:"monstera",   name:"Monstera",     cat:"Plants",     tier:"premium", cost:25, place:"floor" },
+    { id:"pothos",     name:"Trailing Pothos",cat:"Plants",   tier:"mid",     cost:12, place:"wall"  },
+    { id:"cactrio",    name:"Cactus Trio",  cat:"Plants",     tier:"mid",     cost:10, place:"shelf" },
+    { id:"bonsai",     name:"Bonsai",       cat:"Plants",     tier:"premium", cost:27, place:"shelf" },
+    { id:"fern",       name:"Fern",         cat:"Plants",     tier:"mid",     cost:13, place:"floor" },
+    { id:"airplant",   name:"Air Plant",    cat:"Plants",     tier:"common",  cost:4,  place:"shelf" },
+    { id:"pennant",    name:"Pennant Garland",cat:"Decor",    tier:"common",  cost:5,  place:"wall"  },
+    { id:"tapestry",   name:"Tapestry",     cat:"Decor",      tier:"mid",     cost:14, place:"wall"  },
+    { id:"floatshelf", name:"Floating Shelf",cat:"Decor",     tier:"mid",     cost:12, place:"wall"  },
+    { id:"photowire",  name:"Photo Wire",   cat:"Decor",      tier:"mid",     cost:13, place:"wall"  },
+    { id:"roundmirror",name:"Round Mirror", cat:"Decor",      tier:"mid",     cost:14, place:"wall"  },
+    { id:"botanical",  name:"Framed Botanical",cat:"Decor",   tier:"common",  cost:5,  place:"wall"  },
+    { id:"teaset",     name:"Tea Set",      cat:"Shelf",      tier:"common",  cost:4,  place:"shelf" },
+    { id:"cassette",   name:"Cassette Deck",cat:"Shelf",      tier:"premium", cost:26, place:"shelf" },
+    { id:"crate",      name:"Record Crate", cat:"Shelf",      tier:"mid",     cost:13, place:"floor" },
+    { id:"deskplant",  name:"Desk Plant",   cat:"Shelf",      tier:"common",  cost:4,  place:"shelf" },
+    { id:"incense",    name:"Incense",      cat:"Shelf",      tier:"common",  cost:5,  place:"shelf" },
+    { id:"blanket",    name:"Knit Blanket", cat:"Comfort",    tier:"mid",     cost:12, place:"floor" },
+    { id:"pouf",       name:"Floor Pouf",   cat:"Comfort",    tier:"mid",     cost:11, place:"floor" },
+    { id:"basket",     name:"Woven Basket", cat:"Comfort",    tier:"common",  cost:5,  place:"floor" },
     // window views
     { id:"view_street",name:"View: Quiet Street",   cat:"Window Views", tier:"luxury", cost:60, place:"view" },
     { id:"view_forest",name:"View: Forest Edge",    cat:"Window Views", tier:"luxury", cost:65, place:"view" },
@@ -597,7 +669,7 @@
   var DEF_WALL="#e3d3b4", DEF_FLOOR="#caa978";   // midday reference tones
   var BY_ID = {};
   CATALOG.forEach(function (i) { BY_ID[i.id] = i; });
-  var CAT_ORDER = ["Furniture","Lighting","Plants","Decor","Shelf","Window Views","Surfaces"];
+  var CAT_ORDER = ["Furniture","Lighting","Plants","Decor","Shelf","Comfort","Window Views","Surfaces"];
 
   // ---------- state ----------
   function freshState() {
@@ -619,7 +691,12 @@
       activeWall:  "wall_default",
       itemState: {},             // per-id toggles, e.g. lamp/radio on/off
       seenHint: false,           // first-visit onboarding shown?
-      settings: { sway:true, sound:false, reduceMotion:false, blackout:false, liveWx:false, accurateDaylight:false }
+      settings: { sway:true, sound:false, radio:false, ui:true, reduceMotion:false, blackout:false, liveWx:false, accurateDaylight:false },
+      discovered: [],            // one-time discovery rewards already claimed
+      lastDailyBonus: new Date().toISOString().slice(0,10),  // fresh: skip day-1
+      wish: null,                // { cat, reward, since } — the room's gentle wish
+      lastFindAt: 0,             // ms of last stray-stamp find (rate-limit)
+      find: null                 // { x, y, amt } — a stamp waiting on the floor
     };
   }
   var S;
@@ -654,9 +731,17 @@
           sound:       !!(p.settings && p.settings.sound),
           reduceMotion:!!(p.settings && p.settings.reduceMotion),
           blackout:    !!(p.settings && p.settings.blackout),
+          radio:       !!(p.settings && p.settings.radio),
+          ui:          !p.settings || p.settings.ui!==false,
           liveWx:      !!(p.settings && p.settings.liveWx),
           accurateDaylight: !!(p.settings && p.settings.accurateDaylight)
-        }
+        },
+        discovered: Array.isArray(p.discovered) ? p.discovered.filter(function(x){return typeof x==="string";}) : [],
+        lastDailyBonus: typeof p.lastDailyBonus==="string" ? p.lastDailyBonus : "",
+        wish: (p.wish && typeof p.wish==="object" && typeof p.wish.cat==="string"
+               && Number.isFinite(p.wish.reward)) ? p.wish : null,
+        lastFindAt: Number.isFinite(p.lastFindAt) ? p.lastFindAt : 0,
+        find: (p.find && typeof p.find==="object" && Number.isFinite(p.find.amt)) ? p.find : null
       };
     } catch (e) {
       return freshState();
@@ -690,9 +775,138 @@
     }
   }
 
+  // ---------- bonus stamps: discoveries · wishes · finds · daily ----------
+  // Quiet, non-grindy ways to earn beyond the locked 1/hr accrual. Nothing
+  // pulses or nags; rewards are small so they complement, not replace, time.
+  var _toastEl=null, _toastT=0;
+  function toast(msg){
+    _toastEl = _toastEl || document.getElementById("toast");
+    if (!_toastEl) return;
+    _toastEl.textContent = msg;
+    _toastEl.classList.add("show");
+    clearTimeout(_toastT);
+    _toastT = setTimeout(function(){ _toastEl.classList.remove("show"); }, 4400);
+  }
+  // quiet "now playing" caption for the lofi radio — fades in, lingers, out
+  var _npEl=null, _npT=0;
+  function nowPlaying(txt){
+    _npEl = _npEl || document.getElementById("npHint");
+    if (!_npEl || !txt) return;
+    _npEl.textContent = "♪  " + txt;
+    _npEl.classList.add("show");
+    clearTimeout(_npT);
+    _npT = setTimeout(function(){ _npEl.classList.remove("show"); }, 4200);
+  }
+  function grantStamps(n, msg){
+    n = Math.floor(n); if (n<=0) return;
+    S.stamps += n;
+    toast(msg + "  +" + n + (n===1?" stamp":" stamps"));
+    if (typeof refreshHUD==="function") refreshHUD();
+    saveState();
+  }
+  // A — one-time discoveries
+  var DISCOVERY = {
+    radio_on:  { r:3,  m:"the radio hums to life." },
+    light_low: { r:2,  m:"a softer kind of light." },
+    curtains:  { r:1,  m:"you draw the curtains." },
+    place_5:   { r:5,  m:"the room's coming together." },
+    place_10:  { r:8,  m:"a proper little home." },
+    place_20:  { r:12, m:"beautifully, wholly yours." },
+    view_set:  { r:2,  m:"a new view from the window." }
+  };
+  function discover(key, baseKey){
+    if (!S.discovered) S.discovered=[];
+    if (S.discovered.indexOf(key)!==-1) return;
+    var d = DISCOVERY[baseKey||key]; if (!d) return;
+    S.discovered.push(key);
+    grantStamps(d.r, d.m);
+  }
+  function placedCount(){ return Object.keys(S.placedItems).length; }
+  function checkPlacements(){
+    var n=placedCount();
+    if (n>=5)  discover("place_5");
+    if (n>=10) discover("place_10");
+    if (n>=20) discover("place_20");
+  }
+  // C — gentle wishes (one at a time, optional, no timer pressure)
+  var WISH_CATS=["Furniture","Lighting","Plants","Decor","Shelf"];
+  var WISH_TXT={
+    Furniture:"the room feels like it could use another piece of furniture.",
+    Lighting:"it feels like it wants a little more light.",
+    Plants:"it feels like it wants something green.",
+    Decor:"the walls feel a touch bare.",
+    Shelf:"the shelf could use a little life."
+  };
+  function maybeNewWish(){
+    if (S.wish || placedCount()<3) return;
+    if (Math.random()<0.5) return;                 // not every visit
+    var cat=WISH_CATS[(Math.random()*WISH_CATS.length)|0];
+    S.wish={ cat:cat,
+      reward: cat==="Furniture"?9 : (cat==="Plants"||cat==="Decor")?7 : 6,
+      since:Date.now() };
+  }
+  function wishNote(){
+    if (!S.wish) return;
+    var an=document.getElementById("awayNote");
+    if (!an || !an.hidden) return;                 // don't fight the welcome note
+    an.textContent = WISH_TXT[S.wish.cat] || "the room wishes for something.";
+    an.hidden=false;
+    var hide=function(){ an.style.opacity="0";
+      setTimeout(function(){ an.hidden=true; an.style.opacity=""; },1300); };
+    an.addEventListener("click",hide,{once:true});
+    setTimeout(hide, 12000);
+  }
+  function checkWish(catPlaced){
+    if (S.wish && catPlaced && S.wish.cat===catPlaced){
+      var r=S.wish.reward; S.wish=null;
+      grantStamps(r, "the room feels more complete.");
+    }
+  }
+  // B — a stray stamp tucked on the floor, ~once/day at most
+  function maybeSpawnFind(){
+    if (S.find) return;
+    if (Date.now()-(S.lastFindAt||0) < 20*HOUR) return;
+    if (Math.random()<0.55) return;                // ~45% when eligible
+    S.find={ x: 140 + ((Math.random()*110)|0),
+             y: WALL_BOTTOM + Math.round((VH-WALL_BOTTOM)*0.62),
+             amt: (Math.random()<0.26?3:(Math.random()<0.6?2:1)) };
+  }
+  function nearFind(p){
+    var f=S.find; if(!f) return false;
+    var dx=p.x-f.x, dy=p.y-f.y; return dx*dx+dy*dy < 15*15;
+  }
+  function pickFind(){
+    var a=S.find?S.find.amt:0; S.find=null; S.lastFindAt=Date.now();
+    grantStamps(a, "a stray stamp, tucked by the floorboards.");
+  }
+  function drawFind(){
+    if (!S.find) return;
+    var f=S.find, t=Date.now()*0.004, bob=Math.round(Math.sin(t)*1.5);
+    var x=f.x, y=f.y+bob;
+    ctx.fillStyle="rgba(43,37,51,0.22)";
+    ctx.beginPath(); ctx.ellipse(x, f.y+8, 9, 3, 0, 0, 6.2832); ctx.fill();
+    px(ctx, x-7, y-8, 14, 16, OL);
+    px(ctx, x-6, y-7, 12, 14, "#e8b54e");
+    px(ctx, x-6, y-7, 12, 2, "#f6d98a");
+    px(ctx, x-6, y+5, 12, 2, "#b9842f");
+    px(ctx, x-4, y-4, 8, 8, OL);
+    px(ctx, x-3, y-3, 6, 6, "#f3ead2");
+    dot(ctx, x-1, y-1, "#cf8d83");
+    if (Math.sin(t*1.7)>0.7) dot(ctx, x+5, y-6, "#fff4d4");  // gentle glint
+  }
+  // D — a small something for coming back (no streak, no penalty)
+  function dailyBonus(hadSave){
+    var today=new Date().toISOString().slice(0,10);
+    if (!hadSave){ S.lastDailyBonus=today; return; }
+    if (S.lastDailyBonus!==today){
+      S.lastDailyBonus=today;
+      grantStamps(5, "a little something for coming back.");
+    }
+  }
+
   // ---------- orders ----------
   function processOrders() {
-    var now = Date.now();
+    var now = Date.now(), delivered = false;
     var still = [];
     if (!Array.isArray(S.mailWaiting)) S.mailWaiting = [];
     S.pendingOrders.forEach(function (o) {
@@ -702,12 +916,14 @@
         }
         if (S.mailWaiting.indexOf(o.itemId) === -1 && !S.placedItems[o.itemId]) {
           S.mailWaiting.push(o.itemId);          // newly delivered → notify mailbox
+          delivered = true;
         }
       } else {
         still.push(o);
       }
     });
     S.pendingOrders = still;
+    if (delivered && typeof sfx==="function") sfx("knock");   // a knock at the door
   }
   function clearMail(id){
     if (!Array.isArray(S.mailWaiting)) { S.mailWaiting=[]; return; }
@@ -1032,6 +1248,214 @@
       dot(c,19,9,"#cf8d83"); dot(c,20,9,"#f3ead2");
       px(c,30,17,9,9,OL); px(c,31,18,7,7,"#e6b483"); dot(c,34,21,"#8e5a30"); // speaker
       px(c,8,5,3,1,MET.lt);                            // tonearm
+    },
+    // ---- expansion: furniture ----
+    armchair: function (c) {
+      px(c,3,10,34,26,OL); px(c,4,11,32,24,CLO.md); px(c,4,11,32,3,CLO.hi);
+      px(c,3,14,9,22,OL); px(c,4,15,7,20,CLO.dk);
+      px(c,28,14,9,22,OL); px(c,29,15,7,20,CLO.dk);
+      px(c,11,5,18,13,OL); px(c,12,6,16,11,CLO.lt); px(c,12,6,16,2,CLO.hi);
+      px(c,12,23,16,9,OL); px(c,13,24,14,7,CLO.lt);
+      px(c,7,36,4,4,WOOD.dk); px(c,29,36,4,4,WOOD.dk);
+    },
+    bookshelf: function (c) {
+      px(c,3,1,34,52,OL); px(c,4,2,32,50,WOOD.md);
+      px(c,4,2,32,2,WOOD.hi); px(c,4,2,2,50,WOOD.lt); px(c,34,2,2,50,WOOD.dk);
+      var cols=["#b06a4f","#6f8b7c","#9c7c5e","#8a6f9c","#bf9a4a"];
+      for (var s=0;s<3;s++){ var sy=5+s*16;
+        px(c,6,sy,28,13,"#3a2e24");
+        for (var b=0;b<7;b++){ var bx=7+b*4, bh=9+((b+s)%3)*2;
+          px(c,bx,sy+13-bh,3,bh,cols[(b+s)%5]); px(c,bx,sy+13-bh,3,1,CRM.hi); }
+        px(c,5,sy+13,30,2,WOOD.dk); }
+    },
+    coffeetable: function (c) {
+      px(c,1,4,44,7,OL); px(c,2,5,42,5,WOOD.md);
+      px(c,2,5,42,1,WOOD.hi); px(c,2,9,42,1,WOOD.dk);
+      px(c,5,11,4,14,OL); px(c,6,12,2,12,WOOD.md);
+      px(c,37,11,4,14,OL); px(c,38,12,2,12,WOOD.md);
+      px(c,9,16,28,2,WOOD.dk);
+    },
+    floorcushion: function (c) {
+      px(c,2,4,30,12,OL); px(c,3,5,28,10,CLO.md);
+      px(c,3,5,28,3,CLO.lt); px(c,3,13,28,2,CLO.dk);
+      dot(c,7,9,CLO.hi); dot(c,26,9,CLO.hi); px(c,15,6,3,8,CLO.dk);
+    },
+    ottoman: function (c) {
+      px(c,2,4,26,12,OL); px(c,3,5,24,10,CLO.md);
+      px(c,3,5,24,3,CLO.lt); px(c,3,5,24,1,CLO.hi);
+      px(c,4,16,3,5,WOOD.dk); px(c,23,16,3,5,WOOD.dk);
+      px(c,8,8,14,1,CLO.dk); px(c,14,5,2,10,CLO.dk);
+    },
+    screen: function (c) {
+      for (var p=0;p<3;p++){ var x=2+p*14, y=2+(p===1?0:2), h=42-(p===1?0:2);
+        px(c,x,y,13,h,OL);
+        px(c,x+1,y+1,11,h-2,(p%2?"#8a96a8":"#9aa6b6"));
+        px(c,x+1,y+1,11,2,"#b6c0cd");
+        px(c,x+2,y+5,9,h-12,(p%2?"#7a8698":"#8893a3")); }
+    },
+    // ---- expansion: lighting ----
+    lantern: function (c) {
+      px(c,10,30,4,10,OL); px(c,11,31,2,9,WOOD.md);
+      px(c,5,38,14,3,OL); px(c,6,39,12,1,WOOD.md);
+      px(c,4,4,16,26,OL);
+      px(c,5,5,14,24,"#f0c98a"); px(c,5,5,14,3,"#f9e6bb");
+      px(c,5,5,4,24,"#f7dca0"); px(c,15,5,4,24,"#d8a866");
+      px(c,8,12,8,10,GLOW);
+      px(c,9,2,6,3,OL); px(c,10,3,4,1,WOOD.hi);
+    },
+    saltlamp: function (c) {
+      px(c,4,18,12,5,OL); px(c,5,19,10,3,WOOD.md); px(c,5,19,10,1,WOOD.hi);
+      px(c,5,4,11,15,OL);
+      px(c,6,5,9,13,"#e58a5e"); px(c,6,5,4,13,"#f0a878"); px(c,11,5,4,13,"#cf6f44");
+      px(c,8,8,5,6,GLOW); dot(c,9,7,"#ffe6a6");
+    },
+    fairyjar: function (c) {
+      px(c,4,3,10,3,OL); px(c,5,4,8,1,MET.lt);
+      px(c,3,6,12,16,OL); px(c,4,7,10,14,"#bcd0d6");
+      px(c,4,7,3,14,"#d6e4e8"); px(c,11,7,3,14,"#9bb3ba");
+      dot(c,6,11,GLOW); dot(c,9,9,"#ffe6a6"); dot(c,11,13,GLOW);
+      dot(c,7,16,"#ffe6a6"); dot(c,10,17,GLOW);
+    },
+    arclamp: function (c) {
+      px(c,4,48,20,4,OL); px(c,5,49,18,2,MET.md);
+      px(c,12,12,3,38,OL); px(c,13,12,1,38,MET.lt);
+      px(c,13,9,18,4,OL); px(c,14,10,16,2,MET.md);
+      px(c,28,8,10,10,OL); px(c,29,9,8,8,"#efd9a4"); px(c,29,9,8,2,"#fbeec4");
+      px(c,30,16,6,3,GLOW);
+    },
+    // ---- expansion: plants ----
+    monstera: function (c) {
+      var s=pot(c,22,40,24,18,12,5,TERR);
+      px(c,21,16,3,s-16,OL); px(c,22,16,1,s-16,GRN.dk);
+      leaf(c,12,4,18,22,-2); leaf(c,32,7,17,20,2);
+      leaf(c,22,0,18,20,0); leaf(c,9,20,14,16,-2); leaf(c,34,22,13,15,2);
+    },
+    pothos: function (c) {
+      px(c,9,1,2,5,OL); px(c,23,1,2,5,OL);
+      pot(c,17,6,20,15,10,4,CER);
+      var sx=[10,17,24], ln=[22,28,18];
+      for (var i=0;i<3;i++) for (var n=0;n<ln[i];n++){
+        var yy=20+n, xx=sx[i]+Math.round(Math.sin(n*0.45+i)*2);
+        dot(c,xx,yy,GRN.dk);
+        if (n%3===1){ leaf(c,xx-4,yy-1,7,5,0); leaf(c,xx+4,yy-1,7,5,0); } }
+    },
+    cactrio: function (c) {
+      px(c,3,20,24,9,OL); px(c,4,21,22,7,TERR.md); px(c,4,21,22,2,TERR.hi);
+      cactusCol(c,6,8,6,14); cactusCol(c,13,4,7,18); cactusCol(c,21,11,5,11);
+      dot(c,8,9,GRN.hi); dot(c,16,6,"#e6a59c");
+    },
+    bonsai: function (c) {
+      px(c,4,24,26,5,OL); px(c,5,25,24,3,WOOD.md); px(c,5,25,24,1,WOOD.hi);
+      px(c,15,12,4,12,OL); px(c,16,12,2,12,WOOD.dk); px(c,16,16,7,2,WOOD.dk);
+      for (var i=0;i<3;i++){ var cx=10+i*8, cy=8+(i===1?-2:0);
+        px(c,cx-6,cy,12,7,OL); px(c,cx-5,cy+1,10,5,GRN.md);
+        px(c,cx-5,cy+1,10,2,GRN.lt); dot(c,cx,cy+2,GRN.hi); }
+    },
+    fern: function (c) {
+      var s=pot(c,20,34,22,16,12,5,CER);
+      for (var i=0;i<7;i++){ var a=(i-3)*0.34;
+        var ex=20+Math.sin(a)*17, ey=(s-2)-Math.cos(a)*30, steps=12;
+        for (var n=0;n<steps;n++){ var t=n/steps;
+          var xx=Math.round(20+(ex-20)*t), yy=Math.round((s-2)+(ey-(s-2))*t);
+          dot(c,xx,yy,GRN.dk);
+          if (n%2===0){ dot(c,xx-2,yy,GRN.md); dot(c,xx+2,yy,GRN.lt); } } }
+    },
+    airplant: function (c) {
+      px(c,5,14,12,5,OL); px(c,6,15,10,3,CER.md); px(c,6,15,10,1,CER.hi);
+      blade(c,8,15,11,-3,3,{}); blade(c,11,15,13,0,3,{});
+      blade(c,14,15,10,3,3,{}); blade(c,6,15,8,-4,2,{flip:true});
+    },
+    // ---- expansion: decor ----
+    pennant: function (c) {
+      px(c,0,2,42,1,"#2f261c");
+      var cols=["#cf8d83","#8fa67d","#e6b483","#6f8b9c","#d8a86a"];
+      for (var i=0;i<6;i++){ var x=3+i*6;
+        for (var r=0;r<8;r++){ var w=Math.max(1,6-Math.round(r*0.6));
+          px(c,x+Math.round(r*0.3),3+r,w,1,(r>6?OL:cols[i%5])); }
+        dot(c,x,3,CRM.hi); }
+    },
+    tapestry: function (c) {
+      px(c,2,1,28,3,WOOD.md);
+      px(c,3,4,26,32,OL); px(c,4,5,24,30,"#b9846b");
+      px(c,6,8,20,4,"#e0c39a"); px(c,6,16,20,4,"#7d9c84"); px(c,6,24,20,4,"#cf8d83");
+      for (var d=0;d<7;d++) px(c,5+d*3,12,2,2,"#3a2e24");
+      for (var f=0;f<13;f++) px(c,4+f*2,36,1,4,"#9c6f55");
+    },
+    floatshelf: function (c) {
+      px(c,2,6,32,3,OL); px(c,3,7,30,1,WOOD.hi); px(c,3,8,30,1,WOOD.md); px(c,3,9,30,1,WOOD.dk);
+      px(c,7,1,4,5,OL); px(c,8,2,2,4,GRN.md);
+      px(c,22,1,8,5,OL); px(c,23,2,6,3,"#6f8b7c");
+    },
+    photowire: function (c) {
+      px(c,0,2,42,1,"#2f261c");
+      for (var i=0;i<4;i++){ var x=6+i*10;
+        px(c,x,2,1,3,"#2f261c");
+        px(c,x-3,5,8,9,OL); px(c,x-2,6,6,7,CRM.hi);
+        px(c,x-2,6,6,5,(i%2?"#9bb3ba":"#cdb6a0")); }
+    },
+    roundmirror: function (c) {
+      for (var i=0;i<28;i++){ var dy=i-14, hw=Math.round(Math.sqrt(Math.max(0,190-dy*dy)));
+        if (hw<=0) continue;
+        px(c,14-hw,1+i,hw*2,1,OL);
+        px(c,15-hw,1+i,Math.max(0,hw*2-2),1,"#c9d4dd");
+        if (i<13) px(c,15-hw,1+i,Math.max(1,hw),1,"#e6eef4"); }
+      px(c,12,28,4,2,WOOD.dk);
+    },
+    botanical: function (c) {
+      panel(c,1,1,24,28,WOOD);
+      px(c,4,4,18,22,OL); px(c,5,5,16,20,"#eef0e6");
+      px(c,12,9,2,15,GRN.dk);
+      leaf(c,9,8,8,10,-1); leaf(c,17,10,8,10,1); leaf(c,13,5,7,9,0);
+    },
+    // ---- expansion: shelf ----
+    teaset: function (c) {
+      px(c,1,13,28,4,OL); px(c,2,14,26,2,CRM.sh);
+      px(c,4,4,12,10,OL); px(c,5,5,10,8,"#d8e0e6"); px(c,5,5,5,8,"#eef3f6");
+      px(c,15,7,3,3,OL); px(c,9,1,3,3,OL);
+      px(c,20,7,6,6,OL); px(c,21,8,4,4,"#d8e0e6");
+      px(c,25,9,4,4,OL); px(c,26,10,2,2,"#d8e0e6");
+    },
+    cassette: function (c) {
+      px(c,1,4,36,14,OL); px(c,2,5,34,12,"#4a4f57"); px(c,2,5,34,2,"#666b73");
+      px(c,5,8,16,7,OL); px(c,6,9,14,5,"#2b2e33");
+      dot(c,9,11,"#cf8d83"); dot(c,16,11,"#cf8d83");
+      px(c,24,8,10,3,MET.dk); px(c,24,12,10,3,"#2b2e33");
+      dot(c,26,13,"#8fa67d"); dot(c,30,13,"#e6b483");
+    },
+    crate: function (c) {
+      var cols=["#cf8d83","#6f8b7c","#e6b483","#8a6f9c","#bf9a4a"];
+      for (var i=0;i<5;i++){ px(c,5+i*4,4,3,20,OL); px(c,6+i*4,5,1,18,cols[i]); }
+      px(c,2,12,26,14,OL); px(c,3,13,24,12,WOOD.md);
+      px(c,3,13,24,2,WOOD.hi); px(c,3,23,24,2,WOOD.dk);
+      px(c,7,16,16,1,WOOD.dk); px(c,7,20,16,1,WOOD.dk);
+    },
+    deskplant: function (c) {
+      var s=pot(c,10,15,12,9,7,3,TERR);
+      leaf(c,6,4,7,11,-1); leaf(c,14,5,7,10,1); leaf(c,10,2,7,11,0);
+    },
+    incense: function (c) {
+      px(c,3,17,14,4,OL); px(c,4,18,12,2,WOOD.md); px(c,4,18,12,1,WOOD.hi);
+      px(c,10,5,1,13,"#3a2e24"); dot(c,10,4,FLAME);
+      dot(c,11,2,"#c9c2b4"); dot(c,9,1,"#d8d2c6"); dot(c,10,0,"#e6e1d6");
+    },
+    // ---- expansion: comfort ----
+    blanket: function (c) {
+      px(c,2,5,30,15,OL); px(c,3,6,28,13,"#c98a86");
+      px(c,3,6,28,3,"#dba39f"); px(c,3,16,28,3,"#a96f6a");
+      for (var i=4;i<31;i+=4) px(c,i,7,1,11,"#a96f6a");
+      px(c,3,18,28,3,OL); px(c,4,19,26,2,"#8f5a56");
+    },
+    pouf: function (c) {
+      px(c,3,6,22,14,OL); px(c,4,7,20,12,"#b89a6a");
+      px(c,4,7,20,3,"#cdb083"); px(c,4,16,20,3,"#9c7f52");
+      for (var i=6;i<24;i+=4) px(c,i,8,1,10,"#8a6f48");
+      dot(c,14,5,"#8a6f48");
+    },
+    basket: function (c) {
+      px(c,2,6,20,15,OL); px(c,3,7,18,13,"#bd935f");
+      for (var r=0;r<13;r+=3) px(c,3,7+r,18,1,"#9c7544");
+      for (var cc=4;cc<21;cc+=4) px(c,cc,7,1,13,"#a9824f");
+      px(c,2,5,20,3,OL); px(c,3,6,18,1,"#cda36a");
     }
   };
 
@@ -1041,7 +1465,15 @@
       floorlamp:[34,50],desklamp:[34,32],strlights:[64,20],candle:[26,36],
       succulent:[32,40],hangvine:[34,48],fiddle:[40,52],mossrock:[36,32],
       poster:[32,40],print:[40,34],clock:[34,34],mirror:[32,42],
-      mug:[32,30],books:[36,30],radio:[40,32],vinyl:[44,34]
+      mug:[32,30],books:[36,30],radio:[40,32],vinyl:[44,34],
+      armchair:[40,40],bookshelf:[40,54],coffeetable:[46,26],floorcushion:[34,18],
+      ottoman:[30,22],screen:[44,46],lantern:[24,42],saltlamp:[20,24],
+      fairyjar:[18,24],arclamp:[40,54],monstera:[44,54],pothos:[34,44],
+      cactrio:[30,30],bonsai:[34,30],fern:[40,46],airplant:[22,20],
+      pennant:[42,16],tapestry:[32,42],floatshelf:[36,12],photowire:[42,20],
+      roundmirror:[28,30],botanical:[26,30],teaset:[30,18],cassette:[38,20],
+      crate:[30,28],deskplant:[20,24],incense:[20,22],blanket:[34,22],
+      pouf:[28,22],basket:[24,22]
     };
     return b[id] || [32,32];
   }
@@ -1052,7 +1484,14 @@
     floorlamp:0.95, fiddle:1.00, hangvine:0.80, strlights:0.85,
     poster:0.78, print:0.80, clock:0.60, mirror:0.85,
     mug:0.42, books:0.55, radio:0.52, vinyl:0.64, candle:0.46,
-    succulent:0.52, mossrock:0.52, desklamp:0.60
+    succulent:0.52, mossrock:0.52, desklamp:0.60,
+    armchair:0.92, bookshelf:0.98, coffeetable:0.90, floorcushion:0.80,
+    ottoman:0.76, screen:0.95, lantern:0.80, saltlamp:0.55, fairyjar:0.50,
+    arclamp:0.95, monstera:1.00, pothos:0.80, cactrio:0.56, bonsai:0.62,
+    fern:0.92, airplant:0.46, pennant:0.80, tapestry:0.82, floatshelf:0.80,
+    photowire:0.80, roundmirror:0.70, botanical:0.68, teaset:0.50,
+    cassette:0.58, crate:0.64, deskplant:0.46, incense:0.46,
+    blanket:0.70, pouf:0.72, basket:0.55
   };
   function kof(id){ return ITEM_K[id]||1; }
   function drawScaleOf(id){ return worldS(id)*kof(id); }   // resolved render scale
@@ -1125,6 +1564,7 @@
     var skyHex = cssToHex(tod.sky);
     if (wx==="rain")   skyHex = shade(skyHex,-26);
     if (wx==="cloudy") skyHex = shade(skyHex,-12);
+    if (wx==="snow")   skyHex = shade(skyHex, 14);   // bright overcast
     var i, t, tx;
     // banded gradient sky (darker at top, soft glow at the horizon)
     var bands = 9;
@@ -1234,8 +1674,20 @@
         c.fillRect(dxp,dyp,2,3); c.fillRect(dxp,dyp+3,1,2);
       }
     }
+    // snow on the glass — slow drifting flakes (lighter, calmer than rain)
+    if (wx==="snow"){
+      var snt = rmo ? 0 : Date.now()*0.001;
+      c.fillStyle = night ? "rgba(226,232,242,0.7)" : "rgba(248,250,253,0.88)";
+      for (i=0;i<56;i++){
+        var sd=(i*73%1000)/1000;                       // per-flake phase
+        var sx=x + (((i*97) + (rmo?0:Math.sin(snt*0.7 + i)*8)) % w + w) % w;
+        var sy=y + (((i*53) + (rmo?0:snt*20*(0.55+sd))) % (h+12)) - 6;
+        var r=(i%6===0)?2:1;
+        c.fillRect(Math.round(sx), Math.round(sy), r, r);
+      }
+    }
     // a single bird occasionally drifts past — rare, quiet, daytime only
-    if (!rmo && !night && wx!=="rain"){
+    if (!rmo && !night && wx!=="rain" && wx!=="snow"){
       if (!bird && Math.random() < 0.00016){
         var ld = Math.random()<0.5;
         bird = { x: ld ? x-8 : x+w+8, dir: ld?1:-1,
@@ -1288,8 +1740,9 @@
   var WX_KEY="phantombw.wx", WX_TTL=30*60000, liveWxCond=null, wxBusy=false;
   function mapWx(txt, pop){
     txt=(txt||"").toLowerCase();
+    if (/snow|flurr|wintry|blizzard/.test(txt)) return "snow";
     if (/thunder|rain|shower|drizzle|sleet/.test(txt)) return "rain";
-    if (/snow|flurr|wintry|cloud|overcast|fog|haze|mist/.test(txt)) return "cloudy";
+    if (/cloud|overcast|fog|haze|mist/.test(txt)) return "cloudy";
     if (/sun|clear|fair/.test(txt)) return "clear";
     return (pop!=null && pop>=55) ? "rain" : "clear";
   }
@@ -1333,7 +1786,7 @@
     var blk=Math.floor((d.getHours())/3);
     var s=(d.getFullYear()*131 + doy*17 + blk*7)>>>0;
     s=(s*1103515245+12345)&0x7fffffff; var r=s/0x7fffffff;
-    if (r<0.16) return "rain";
+    if (r<0.16) return ambSeason()==="winter" ? "snow" : "rain";
     if (r<0.40) return "cloudy";
     return "clear";
   }
@@ -1434,7 +1887,12 @@
     desklamp:["furniture","shelf","floor"], candle:["furniture","shelf","floor"],
     succulent:["furniture","shelf","floor"], mossrock:["furniture","shelf","floor"],
     mug:["furniture","shelf","floor"], books:["furniture","shelf","floor"],
-    radio:["furniture","shelf","floor"], vinyl:["furniture","shelf","floor"]
+    radio:["furniture","shelf","floor"], vinyl:["furniture","shelf","floor"],
+    saltlamp:["furniture","shelf","floor"], fairyjar:["furniture","shelf","floor"],
+    cactrio:["furniture","shelf","floor"], bonsai:["furniture","shelf","floor"],
+    airplant:["furniture","shelf","floor"], teaset:["furniture","shelf","floor"],
+    cassette:["furniture","shelf","floor"], deskplant:["furniture","shelf","floor"],
+    incense:["furniture","shelf","floor"]
   };
   function placesOf(itm){ return itm.place==="view" ? ["view"] : (SURF_BY_ID[itm.id]||[itm.place]); }
 
@@ -1612,8 +2070,12 @@
   }
   // is a toggleable item currently on? lamps/candle/lights default ON,
   // radio/vinyl default OFF.
-  function defOn(id){ return id==="floorlamp"||id==="desklamp"||id==="candle"||id==="strlights"; }
+  function defOn(id){ return id==="floorlamp"||id==="desklamp"||id==="candle"||id==="strlights"
+    ||id==="lantern"||id==="saltlamp"||id==="fairyjar"||id==="arclamp"; }
   function isOn(id){
+    // the radio & vinyl in-room items ARE the lofi radio — their on/off
+    // state is the global S.settings.radio, so menu + Settings stay in sync
+    if (id==="radio"||id==="vinyl") return !!(S.settings && S.settings.radio);
     var st=S.itemState&&S.itemState[id];
     return st && typeof st.on==="boolean" ? st.on : defOn(id);
   }
@@ -1621,7 +2083,8 @@
     return defOn(id) || id==="radio" || id==="vinyl";
   }
   // warm light source points (sprite-local) for emissive items
-  var EMIT = { floorlamp:[17,7], desklamp:[13,9], candle:[13,2] };
+  var EMIT = { floorlamp:[17,7], desklamp:[13,9], candle:[13,2],
+    lantern:[12,16], saltlamp:[10,11], fairyjar:[9,13], arclamp:[33,13] };
   function glow(cx, cy, rad, col, a){
     var g=ctx.createRadialGradient(cx,cy,0,cx,cy,rad);
     g.addColorStop(0, col); g.addColorStop(1, "rgba(255,220,150,0)");
@@ -1918,6 +2381,9 @@
       px(ctx, m.x, m.y, 2, 2, tod.lit);
     }
     ctx.globalAlpha=1;
+
+    // a stray stamp resting on the floor, waiting to be picked up
+    drawFind();
 
     // drag preview
     if (dragging && dragging.preview) {
@@ -2364,6 +2830,7 @@
     S.activeView=id;
     var idx=S.ownedItems.indexOf(id); if(idx!==-1) S.ownedItems.splice(idx,1);
     clearMail(id);
+    discover("view_"+id, "view_set");
     refreshHUD(); buildMail();
   }
 
@@ -2430,6 +2897,10 @@
       delete S.placedItems[id];
       if (S.ownedItems.indexOf(id)===-1) S.ownedItems.push(id);
     }
+    if (d && from!=="room"){            // a NEW item just landed in the room
+      checkPlacements();
+      checkWish(BY_ID[id] && BY_ID[id].cat);
+    }
     dragging=null;
     refreshHUD();
   }
@@ -2458,12 +2929,15 @@
   function tapAction(pt){
     if (pt.x>SWITCH.x-6 && pt.x<SWITCH.x+SWITCH.w+6 &&
         pt.y>SWITCH.y-6 && pt.y<SWITCH.y+SWITCH.h+6){
-      pushUndo(); S.roomLight = !S.roomLight; saveState(); return;
+      pushUndo(); S.roomLight = !S.roomLight;
+      if (!S.roomLight) discover("light_low");
+      saveState(); return;
     }
     if (pt.x>WIN.x-12 && pt.x<WIN.x+WIN.w+12 && pt.y>WIN.y-12 && pt.y<WIN.y+WIN.h+8){
       pushUndo();
       S.curtains = S.curtains==="open" ? "sheer"
                  : S.curtains==="sheer" ? "closed" : "open";
+      if (S.curtains!=="open") discover("curtains");
       saveState();
     }
   }
@@ -2474,6 +2948,7 @@
     if (e.button!==0) return;
     hideMenu();
     var pt=canvasPt(e), id=hitTest(pt);
+    if (S.find && nearFind(pt)){ pickFind(); return; }
     if (e.pointerType==="touch"){
       var sx=e.clientX, sy=e.clientY, done=false;
       var lp=setTimeout(function(){
@@ -2561,6 +3036,7 @@
   // ---------- right-click context menus ----------
   var menu=document.getElementById("ctxMenu"), roomMenu=document.getElementById("ctxRoom"), menuId=null;
   var ctxToggle=document.getElementById("ctxToggle");
+  var ctxNext=document.getElementById("ctxNext");
   function hideMenu(){ menu.style.display="none"; roomMenu.style.display="none"; menuId=null; }
   function place(el,x,y){
     var mw=el.offsetWidth||150, mh=el.offsetHeight||150;
@@ -2574,7 +3050,10 @@
       var playing = (id==="radio"||id==="vinyl");
       ctxToggle.childNodes[1].nodeValue = isOn(id)
         ? (playing?"Stop":"Turn off") : (playing?"Play":"Turn on");
-    } else ctxToggle.style.display="none";
+      // a music source that's currently on can skip to a fresh generative track
+      ctxNext.style.display =
+        (playing && isOn(id) && window.LofiEngine) ? "flex" : "none";
+    } else { ctxToggle.style.display="none"; ctxNext.style.display="none"; }
     place(menu,x,y);
   }
   function showRoomMenu(x,y){ menu.style.display="none"; roomMenu.style.display="block"; place(roomMenu,x,y); }
@@ -2587,6 +3066,7 @@
   menu.addEventListener("click", function(e){
     var ab=e.target && e.target.closest ? e.target.closest("button") : null;
     var act=ab && ab.getAttribute("data-act");
+    if (act==="next"){ if(window.LofiEngine) window.LofiEngine.skip(); return hideMenu(); }
     if (!act || !menuId || !S.placedItems[menuId]) return hideMenu();
     pushUndo();
     var P=S.placedItems[menuId];
@@ -2594,8 +3074,19 @@
     if (act==="front")   P.z=nextZ();
     if (act==="back")    P.z=bottomZ();
     if (act==="toggle"){
-      if (!S.itemState) S.itemState={};
-      S.itemState[menuId]={ on: !isOn(menuId) };
+      if (menuId==="radio"||menuId==="vinyl"){
+        // Play/Stop the lofi radio for real, and persist it as a global setting
+        if (!S.settings) S.settings={};
+        S.settings.radio = !isOn(menuId);
+        radioSync();
+        if (S.settings.radio) discover("radio_on");
+        saveState();
+        if (document.getElementById("setScrim").classList.contains("open"))
+          buildSettings();                       // keep the Settings toggle in sync
+      } else {
+        if (!S.itemState) S.itemState={};
+        S.itemState[menuId]={ on: !isOn(menuId) };
+      }
     }
     if (act==="away"){
       detachChildren(menuId);
@@ -2640,7 +3131,9 @@
   var setBody=document.getElementById("setBody");
   var SET_DEFS=[
     { k:"sway",        title:"Plant sway",       desc:"GENTLE LEAF MOVEMENT" },
-    { k:"sound",       title:"Ambient sound",    desc:"RAIN FX · LO-FI FROM THE RADIO" },
+    { k:"sound",       title:"Ambient sound",    desc:"RAIN & NATURE, ON ROTATION" },
+    { k:"radio",       title:"Lofi radio",       desc:"GENERATIVE LO-FI MUSIC" },
+    { k:"ui",          title:"Interface sounds", desc:"SOFT UI CLICKS" },
     { k:"reduceMotion",title:"Reduced motion",   desc:"FREEZE CLOUDS & DUST" },
     { k:"blackout",    title:"Blackout curtains",desc:"CLOSED CURTAINS GO FULLY DARK" },
     { k:"liveWx",      title:"Real local weather",desc:"USES YOUR LOCATION · US ONLY" },
@@ -2651,7 +3144,8 @@
   function setSet(k,v){
     if (k==="grid"){ S.gridSnap=v; syncGrid(); }
     else { if(!S.settings) S.settings={}; S.settings[k]=v; }
-    if (k==="sound") audioSync();
+    if (k==="sound") ambientSync();
+    if (k==="radio") radioSync();
     if (k==="liveWx"){ if(v) refreshWeather(true); else liveWxCond=null; }
     if (k==="accurateDaylight" && v) ensureDaylight();
     saveState();
@@ -2669,6 +3163,25 @@
       t.addEventListener("click", function(){ setSet(d.k,!getSet(d.k)); paint(); });
       row.appendChild(m); row.appendChild(t); setBody.appendChild(row);
     });
+    // ---- volume sliders: radio + ambient (persisted, live) ----
+    function mkSlider(title, desc, get, set){
+      var row=document.createElement("div"); row.className="setrow";
+      var m=document.createElement("div"); m.className="meta";
+      m.innerHTML="<b>"+title+"</b><small>"+desc+"</small>";
+      var sl=document.createElement("input"); sl.type="range";
+      sl.min=0; sl.max=100; sl.step=1; sl.className="vol";
+      sl.value=Math.round(get()*100);
+      sl.setAttribute("aria-label", title);
+      sl.addEventListener("input", function(){
+        set(Math.min(1,Math.max(0, (+sl.value||0)/100)));
+        applyAudioLevels(); saveState();
+      });
+      row.appendChild(m); row.appendChild(sl); setBody.appendChild(row);
+    }
+    mkSlider("Radio volume", "GENERATIVE LO-FI MUSIC LEVEL",
+      radioVolPref, function(v){ if(!S.settings) S.settings={}; S.settings.radioVol=v; });
+    mkSlider("Ambient volume", "RAIN & NATURE LEVEL · DUCKS UNDER RADIO",
+      ambVolPref, function(v){ if(!S.settings) S.settings={}; S.settings.ambVol=v; });
     // ---- save backup: export / import (room lives only in this browser) ----
     var sv=document.createElement("div"); sv.className="setrow";
     var sm=document.createElement("div"); sm.className="meta";
@@ -2738,110 +3251,185 @@
   document.getElementById("openSettings").addEventListener("click",
     function(){ buildSettings(); openScrim("setScrim"); });
 
-  // ---------- ambient audio (off by default; behind the Sound setting) ----------
-  // The room's rain FX is synthesized/sampled here (own AudioContext). The
-  // generative lo-fi *music* is window.LofiEngine — Roomtone owns its
-  // transport (driven by the radio/vinyl item below), so disable the
-  // engine's own first-gesture autoplay and never touch its saved pref.
-  if (window.LofiEngine) window.LofiEngine.setAutoplay(false);
-  var actx=null, rainGain=null, musicGain=null, audioReady=false;
-  var synthRainGain=null, sampleRainGain=null, rainSampleTried=false;
+  // ---------- audio: ambient beds · UI sfx · lofi radio ----------
+  // Three independent things, each on its own Settings toggle:
+  //  • Ambient sound  → a pool of field recordings on random rotation
+  //  • Interface sounds → tiny one-shot UI clicks / page / knock
+  //  • Lofi radio     → window.LofiEngine, fully decoupled (its own option,
+  //                     no longer tied to the in-room radio item or ambient)
+  if (window.LofiEngine){
+    window.LofiEngine.setAutoplay(false);
+    // show a quiet caption whenever the radio changes track (auto seam or skip)
+    window.LofiEngine.onTrack(function(info){
+      if (info && S.settings && S.settings.radio) nowPlaying(info.label);
+    });
+  }
+  var actx=null, ambGain=null, sfxGain=null, audioReady=false;
+  var AMB=["rain_light","rain_heavy","thunder","snow","snow_storm",
+           "birds","birds_dawn","birds_autumn","forest","crickets","leaves","frogs"];
+  var ambBufs={}, sfxBufs={}, ambSrc=null, ambNode=null, ambName="", ambTimer=0;
+  // which bed belongs to the moment: real weather wins, else time-of-day × season
+  function ambSeason(){
+    var m=new Date().getMonth();                       // 0=Jan
+    var s = (m<2||m===11) ? "winter" : m<5 ? "spring" : m<8 ? "summer" : "autumn";
+    if (geoCoords && geoCoords.lat<0)                  // southern hemisphere → flip
+      s = {winter:"summer",summer:"winter",spring:"autumn",autumn:"spring"}[s];
+    return s;
+  }
+  function ambPhase(){
+    var d=new Date(), hr=d.getHours()+d.getMinutes()/60, sa=solarAnchors(d);
+    if (hr < sa.sr-1 || hr >= sa.ss+1) return "night";
+    if (hr < sa.sr+3)                  return "morning";
+    if (hr < sa.ss-1.5)                return "day";
+    return "evening";
+  }
+  // order = preference (first is primary); tune freely without touching logic
+  var AMB_TABLE = {
+    spring:{ morning:["birds_dawn","birds","forest"], day:["forest","leaves","birds"],
+             evening:["leaves","forest","birds"],     night:["crickets","frogs","forest"] },
+    summer:{ morning:["birds","forest","leaves"],     day:["forest","leaves","crickets"],
+             evening:["crickets","leaves","frogs"],   night:["crickets","frogs"] },
+    autumn:{ morning:["birds","leaves","forest"],     day:["leaves","forest"],
+             evening:["birds_autumn","leaves","forest"], night:["crickets","leaves","forest"] },
+    winter:{ morning:["forest","leaves","birds"],     day:["forest","leaves"],
+             evening:["leaves","forest"],             night:["forest","leaves"] }
+  };
+  function ambientPool(){
+    var wx=weatherNow();
+    if (wx==="snow")
+      return (ambSeason()==="winter" && ambPhase()==="night")
+        ? ["snow","snow_storm"] : ["snow"];
+    if (wx==="rain") return ["rain_light","rain_heavy","thunder"];
+    return AMB_TABLE[ambSeason()][ambPhase()] || ["forest"];
+  }
   function ensureAudio(){
-    if (audioReady) return;
+    if (actx) return;
     try {
       var AC=window.AudioContext||window.webkitAudioContext; if(!AC) return;
       actx=new AC();
-      var buf=actx.createBuffer(1, actx.sampleRate*2, actx.sampleRate);
-      var dd=buf.getChannelData(0);
-      for (var i=0;i<dd.length;i++) dd[i]=(Math.random()*2-1)*0.4;
-      // a second, independent noise buffer so the deep "body" and the
-      // higher "patter" aren't perfectly correlated — sounds less like flat hiss
-      var buf2=actx.createBuffer(1, actx.sampleRate*2, actx.sampleRate);
-      var dd2=buf2.getChannelData(0);
-      for (var j=0;j<dd2.length;j++) dd2[j]=(Math.random()*2-1)*0.4;
-      var rs=actx.createBufferSource();  rs.buffer=buf;   rs.loop=true;
-      var rs2=actx.createBufferSource(); rs2.buffer=buf2; rs2.loop=true;
-      rainGain=actx.createGain(); rainGain.gain.value=0;          // master rain bus
-      // two sub-buses: real recording (primary) crossfades in over the synth
-      // rain, which stays as the offline / load-failure fallback
-      synthRainGain=actx.createGain();  synthRainGain.gain.value=1;  synthRainGain.connect(rainGain);
-      sampleRainGain=actx.createGain(); sampleRainGain.gain.value=0; sampleRainGain.connect(rainGain);
-      // deep body: low rumble with a slow intensity drift
-      var lpBody=actx.createBiquadFilter(); lpBody.type="lowpass"; lpBody.frequency.value=480;
-      var bodyGain=actx.createGain(); bodyGain.gain.value=0.62;
-      rs.connect(lpBody).connect(bodyGain).connect(synthRainGain);
-      // patter: brighter band, gain swelled by a slow LFO → gusts that breathe
-      var bpPat=actx.createBiquadFilter(); bpPat.type="bandpass";
-      bpPat.frequency.value=2400; bpPat.Q.value=0.7;
-      var patGain=actx.createGain(); patGain.gain.value=0.5;
-      rs2.connect(bpPat).connect(patGain).connect(synthRainGain);
-      var lfo=actx.createOscillator(); lfo.type="sine"; lfo.frequency.value=0.06;
-      var lfoDepth=actx.createGain(); lfoDepth.gain.value=0.42;
-      lfo.connect(lfoDepth).connect(patGain.gain);              // ±0.42 swell
-      var lfo2=actx.createOscillator(); lfo2.type="sine"; lfo2.frequency.value=0.021;
-      var lfo2Depth=actx.createGain(); lfo2Depth.gain.value=0.16;
-      lfo2.connect(lfo2Depth).connect(bodyGain.gain);           // slow body drift
-      rainGain.connect(actx.destination);
-      rs.start(); rs2.start(); lfo.start(); lfo2.start();
-      musicGain=actx.createGain(); musicGain.gain.value=0; musicGain.connect(actx.destination);
-      [196.00, 246.94, 293.66].forEach(function(f){
-        var o=actx.createOscillator(); o.type="sine"; o.frequency.value=f;
-        var g=actx.createGain(); g.gain.value=0.34;
-        o.connect(g).connect(musicGain); o.start();
-      });
+      ambGain=actx.createGain(); ambGain.gain.value=0.5; ambGain.connect(actx.destination);
+      sfxGain=actx.createGain(); sfxGain.gain.value=0.7; sfxGain.connect(actx.destination);
       audioReady=true;
-      loadRainSample();
+      applyAudioLevels();
+      loadClip("ambient/", AMB, ambBufs);
+      loadClip("sfx/", ["click","page","knock"], sfxBufs);
     } catch(e){ audioReady=false; }
   }
-  // Pull the real rain recording in once; on success crossfade it over the
-  // synth rain. Any failure (offline first-load, decode error) silently leaves
-  // the synth rain as the fallback. Gated entirely by rainGain (audioSync),
-  // so this stays off unless Sound is on and the weather is rain.
-  function loadRainSample(){
-    if (rainSampleTried || !actx) return; rainSampleTried=true;
-    fetch("roomtone/rain.mp3").then(function(r){
-      if(!r.ok) throw 0; return r.arrayBuffer();
-    }).then(function(ab){
-      return new Promise(function(res,rej){
-        var p=actx.decodeAudioData(ab, res, rej);   // Safari uses the callback form
-        if (p && p.then) p.then(res, rej);
-      });
-    }).then(function(audioBuf){
-      if (!sampleRainGain) return;
-      var src=actx.createBufferSource(); src.buffer=audioBuf; src.loop=true;
-      src.connect(sampleRainGain); src.start();
-      var t=actx.currentTime;
-      sampleRainGain.gain.setTargetAtTime(1, t, 1.5);
-      synthRainGain.gain.setTargetAtTime(0, t, 1.5);
-    }).catch(function(){ /* keep synth rain as fallback */ });
-  }
-  function anyPlaying(){
-    return Object.keys(S.placedItems).some(function(id){
-      return (id==="radio"||id==="vinyl") && isOn(id);
+  function decode(ab){
+    return new Promise(function(res,rej){
+      var p=actx.decodeAudioData(ab, res, rej);   // Safari uses the callback form
+      if (p && p.then) p.then(res,rej);
     });
   }
-  function audioSync(){
-    var want = S.settings && S.settings.sound;
-    // Generative lo-fi music: plays when Sound is on AND a radio/vinyl item
-    // is on. Engine owns its own AudioContext, so drive it independently of
-    // the rain context's readiness.
-    if (window.LofiEngine){
-      if (want && anyPlaying()) window.LofiEngine.play();
-      else window.LofiEngine.pause();
-    }
-    if (!want){ if(rainGain)rainGain.gain.value=0; if(musicGain)musicGain.gain.value=0; return; }
-    ensureAudio(); if(!audioReady) return;
-    if (actx.state==="suspended") actx.resume();
-    var t=actx.currentTime;
-    rainGain.gain.setTargetAtTime(weatherNow()==="rain"?0.05:0, t, 2);
-    musicGain.gain.value=0;   // synth drone retired — LofiEngine is the music
+  function loadClip(dir, names, into){
+    names.forEach(function(n){
+      fetch(dir+n+".mp3").then(function(r){ if(!r.ok) throw 0; return r.arrayBuffer(); })
+        .then(decode).then(function(b){ into[n]=b; })
+        .catch(function(){ /* missing clip → silently skipped */ });
+    });
   }
-  // browsers need a gesture before audio; wire one-time
+  // a tiny one-shot for UI feedback (gated by the Interface-sounds toggle)
+  function sfx(name){
+    if (!(S.settings && S.settings.ui)) return;
+    if (!actx || !sfxBufs[name]) return;
+    if (actx.state==="suspended") actx.resume();
+    var s=actx.createBufferSource(); s.buffer=sfxBufs[name];
+    s.connect(sfxGain); s.start();
+  }
+  function loaded(name){ return !!ambBufs[name]; }
+  function startAmbient(name){
+    if (!actx || !ambBufs[name]) return;
+    var t=actx.currentTime;
+    var old=ambSrc, oldN=ambNode;
+    if (old && oldN){
+      oldN.gain.cancelScheduledValues(t);
+      oldN.gain.setValueAtTime(oldN.gain.value, t);
+      oldN.gain.linearRampToValueAtTime(0.0001, t+2);
+      try{ old.stop(t+2.1); }catch(e){}
+    }
+    var g=actx.createGain(); g.gain.value=0.0001; g.connect(ambGain);
+    var s=actx.createBufferSource(); s.buffer=ambBufs[name]; s.loop=true;
+    s.connect(g); s.start();
+    g.gain.linearRampToValueAtTime(1, t+2);
+    ambSrc=s; ambNode=g; ambName=name;
+  }
+  function rotateAmbient(){
+    var want=ambientPool();
+    var pool=want.filter(function(n){ return loaded(n) && n!==ambName; });
+    if (!pool.length) pool=want.filter(loaded);            // only one valid bed
+    if (!pool.length){
+      if (ambName){                                        // desired beds not decoded yet
+        clearTimeout(ambTimer);                             // keep current; retry soon
+        ambTimer=setTimeout(rotateAmbient, 5000);
+        return;
+      }
+      pool=AMB.filter(loaded);                              // nothing playing → avoid silence
+      if (!pool.length) return;
+    }
+    startAmbient(pool[(Math.random()*pool.length)|0]);
+    clearTimeout(ambTimer);
+    ambTimer=setTimeout(rotateAmbient, (180+Math.random()*120)*1000);  // 3–5 min
+  }
+  function stopAmbient(){
+    clearTimeout(ambTimer);
+    if (ambSrc && ambNode){
+      var t=actx.currentTime;
+      ambNode.gain.cancelScheduledValues(t);
+      ambNode.gain.setValueAtTime(ambNode.gain.value, t);
+      ambNode.gain.linearRampToValueAtTime(0.0001, t+1.4);
+      try{ ambSrc.stop(t+1.5); }catch(e){}
+    }
+    ambSrc=null; ambNode=null; ambName="";
+  }
+  // wait for the loaded buffers (fetch+decode is async) before first play
+  function ambientSync(){
+    var want = S.settings && S.settings.sound;
+    if (want){
+      ensureAudio(); if (!audioReady) return;
+      if (actx.state==="suspended") actx.resume();
+      if (!ambSrc){
+        if (AMB.some(loaded)) rotateAmbient();
+        else setTimeout(ambientSync, 700);     // beds still decoding — retry
+      } else if (ambName && ambientPool().indexOf(ambName)===-1){
+        rotateAmbient();                       // weather/time changed → cross-fade now
+      }
+    } else stopAmbient();
+  }
+  // user-set levels (persisted in S.settings); ambient ducks under the radio
+  function ambVolPref(){ return (S.settings&&typeof S.settings.ambVol==="number") ? S.settings.ambVol : 0.7; }
+  function radioVolPref(){ return (S.settings&&typeof S.settings.radioVol==="number") ? S.settings.radioVol : 0.5; }
+  function applyAudioLevels(){
+    var radioOn = !!(S.settings && S.settings.radio);
+    if (ambGain){
+      var t=actx?actx.currentTime:0, target=ambVolPref()*(radioOn?0.5:1);
+      ambGain.gain.cancelScheduledValues(t);
+      ambGain.gain.setTargetAtTime(target, t, 0.3);   // smooth duck/restore
+    }
+    if (window.LofiEngine) window.LofiEngine.setVolume(radioVolPref());
+  }
+  function radioSync(){
+    if (!window.LofiEngine) return;
+    if (S.settings && S.settings.radio) window.LofiEngine.play();
+    else window.LofiEngine.pause();
+    applyAudioLevels();                                // duck/un-duck ambient
+  }
+  function audioSync(){ ambientSync(); radioSync(); }
+  // soft UI click on any interactive control (page-flip for the big modals)
+  document.addEventListener("pointerdown", function(e){
+    var el=e.target && e.target.closest && e.target.closest(
+      "button,[data-act],[data-r],[data-close],.inv-item,.ware,.setrow,.card");
+    if (!el) return;
+    if (el.id==="openShop"||el.id==="openSettings"||el.id==="openMail") sfx("page");
+    else sfx("click");
+  }, true);
+  // browsers need a gesture before audio; wire one-time + follow toggles
   window.addEventListener("pointerdown", function once(){
     window.removeEventListener("pointerdown", once, true);
-    if (S.settings && S.settings.sound) audioSync();
+    ensureAudio();
+    if (actx && actx.state==="suspended") actx.resume();
+    ambientSync(); radioSync();
   }, true);
-  setInterval(audioSync, 30000);   // follow weather/radio over time
+  setInterval(function(){ ambientSync(); radioSync(); }, 30000);
 
   var firstHintEl=document.getElementById("firstHint");
   function dismissHint(){ firstHintEl.style.display="none"; S.seenHint=true; saveState(); }
@@ -2901,6 +3489,7 @@
   var wasAway = _hadSave && _awayMs > 2*24*3600000;   // returned after 2+ days
   accrue();
   processOrders();
+  dailyBonus(_hadSave);
   // first-ever visitor: a furnished-enough start + things to place,
   // so the room reads as a cozy home from the very first visit
   if (!localStorage.getItem(STORE_KEY) && S.ownedItems.length===0 &&
@@ -2922,6 +3511,8 @@
     } catch(e){}
   }
   normalizePlaced();
+  maybeSpawnFind();
+  maybeNewWish();
   refreshHUD();
   syncGrid();
   if (!S.seenHint) firstHintEl.style.display="block";
@@ -2936,6 +3527,7 @@
     an.addEventListener("click", hideAway);
     setTimeout(hideAway, 11000);
   }
+  else wishNote();
   saveState();
   if (S.settings && S.settings.liveWx) refreshWeather();   // uses cache; no prompt unless stale
   if (S.settings && S.settings.accurateDaylight) ensureDaylight();

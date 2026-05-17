@@ -318,7 +318,8 @@
     display: flex; align-items: center; gap: 8px;
     box-shadow: 2px 2px 0 rgba(92,74,58,0.35);
   }
-  .player-btn:hover { transform: translate(2px, 2px); box-shadow: none; }
+  .player-btn:hover:not(:disabled) { transform: translate(2px, 2px); box-shadow: none; }
+  .player-btn:disabled { opacity: 0.42; cursor: default; }
   .player-btn[aria-pressed="true"] { background: var(--sage); }
   .player-btn .ico { font-size: 0.66rem; line-height: 1; }
   .player-vol { display: flex; align-items: center; gap: 10px; flex: 1; }
@@ -472,6 +473,9 @@
       <div class="player-body">
         <button id="lofiToggle" class="player-btn" type="button" aria-pressed="false">
           <span class="ico" aria-hidden="true">&#9654;</span><span class="lbl">PLAY</span>
+        </button>
+        <button id="lofiNext" class="player-btn" type="button" title="next track" aria-label="next track" disabled>
+          <span class="ico" aria-hidden="true">&#9197;</span><span class="lbl">NEXT</span>
         </button>
         <label class="player-vol">
           <span class="vk">VOL</span>
@@ -636,6 +640,7 @@
     function init(){
       var E=window.LofiEngine;
       var btn=document.getElementById("lofiToggle");
+      var nextBtn=document.getElementById("lofiNext");
       var vol=document.getElementById("lofiVol");
       if(!E||!btn||!vol) return;
       var lbl=btn.querySelector(".lbl"), ico=btn.querySelector(".ico");
@@ -644,11 +649,15 @@
         btn.setAttribute("aria-pressed", on?"true":"false");
         lbl.textContent = on?"PAUSE":"PLAY";
         ico.innerHTML = on ? "&#10073;&#10073;" : "&#9654;";
+        if(nextBtn) nextBtn.disabled = !on;   // skip only means anything while playing
       }
       vol.value = Math.round(E.getVolume()*100);
       btn.addEventListener("click", function(){
         if(E.isPlaying()) E.stop(); else E.start();   // persists the on/off choice
         sync();
+      });
+      if(nextBtn) nextBtn.addEventListener("click", function(){
+        if(E.isPlaying()){ E.skip(); }
       });
       vol.addEventListener("input", function(){ E.setVolume((+vol.value)/100); });
       // engine may auto-start itself on the first gesture if opted in — keep

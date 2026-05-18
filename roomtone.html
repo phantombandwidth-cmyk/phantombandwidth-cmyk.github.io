@@ -543,6 +543,7 @@
     <div class="mhdr">THIS THING</div>
     <button data-act="toggle" id="ctxToggle" style="display:none"><span class="sq"></span>Turn on</button>
     <button data-act="next" id="ctxNext" style="display:none"><span class="sq"></span>Next track</button>
+    <button data-act="turn" id="ctxTurn" style="display:none"><span class="sq"></span>Turn</button>
     <button data-act="flip"><span class="sq"></span>Flip</button>
     <button data-act="front"><span class="sq"></span>Bring forward</button>
     <button data-act="back"><span class="sq"></span>Send back</button>
@@ -1053,6 +1054,27 @@
     }
   }
 
+  // a broad split (fenestrated) monstera leaf — wide near base, pointed tip,
+  // with outline, lit upper-left edge, midrib, and a few cut slits.
+  function mleaf(c, cx, baseY, w, h, lean) {
+    for (var i=0;i<h;i++){
+      var t=i/(h-1), yy=baseY-i;
+      var prof=Math.sin(Math.PI*Math.min(0.97,0.12+t*0.9));
+      var ww=Math.max(1,Math.round(w*prof));
+      var xx=Math.round(cx - ww/2 + lean*t*t);
+      px(c,xx-1,yy,ww+2,1,OL);
+      px(c,xx,yy,ww,1,GRN.md);
+      px(c,xx,yy,Math.max(1,Math.round(ww*0.42)),1,GRN.lt);
+      if (ww>=4 && t>0.55) px(c,xx,yy,ww,1,GRN.dk);
+      if (ww>=5 && i%3===0) dot(c,xx+(lean>0?ww-2:1),yy,GRN.hi);
+      if (ww>=7 && (i%6===3)){                       // fenestration slit
+        var sl=Math.round(ww*0.5);
+        px(c,xx+ww-sl,yy,Math.max(1,sl-1),1,OL);
+      }
+    }
+    for (var j=2;j<h-2;j++) dot(c, Math.round(cx+lean*Math.pow(j/h,2)), baseY-j, GRN.dk);
+  }
+
   // outlined box with a top/left bevel highlight + bottom/right shade
   function panel(c, x, y, w, h, R) {
     px(c, x-1, y-1, w+2, h+2, OL);
@@ -1061,48 +1083,66 @@
     px(c, x, y+h-1, w, 1, R.dk); px(c, x+w-1, y, 1, h, R.dk);
   }
 
+  // soft warm light bloom (concentric translucent discs) — makes a fixture
+  // read as a light even when the in-room light pool isn't applied.
+  function bloom(c, cx, cy, r) {
+    c.save();
+    for (var k=r; k>1; k-=2){
+      c.globalAlpha = 0.05 + 0.11*(1 - k/r);
+      c.fillStyle = "#ffe6a6";
+      c.beginPath(); c.arc(cx, cy, k, 0, 6.2832); c.fill();
+    }
+    c.globalAlpha = 1; c.restore();
+  }
+
   var SPRITES = {
     // ---- furniture ----
-    bed: function (c) {
-      px(c,3,33,50,1,OL);
-      panel(c,2,16,8,20,WOOD);                       // headboard
-      px(c,6,18,52,12,OL);
-      px(c,7,19,50,10,"#cdd3df");                    // mattress
-      px(c,7,19,50,2,"#e7ecf3"); px(c,7,27,50,2,"#aab2c4");
-      px(c,9,15,18,8,OL); px(c,10,16,16,6,"#e7b27e"); px(c,10,16,16,2,"#f4cf9f"); // pillow
-      px(c,6,30,52,4,WOOD.md); px(c,6,30,52,1,WOOD.hi); px(c,6,33,52,1,WOOD.dk);
-      px(c,7,34,4,5,WOOD.dk); px(c,52,34,4,5,WOOD.dk);
+    bed: function (c) {                                  // side profile, 68x30
+      px(c,4,26,60,2,OL);
+      px(c,6,27,3,3,WOOD.dk); px(c,59,27,3,3,WOOD.dk);   // legs
+      panel(c,2,5,7,23,WOOD);                            // headboard
+      panel(c,60,14,6,14,WOOD);                          // footboard
+      px(c,8,14,52,12,OL);
+      px(c,9,15,50,10,"#cdd3df");                        // mattress
+      px(c,9,15,50,2,"#e7ecf3");
+      px(c,33,15,27,12,OL);                              // blanket over foot
+      px(c,34,16,25,10,"#9aa6c4"); px(c,34,16,25,2,"#b3bedb");
+      px(c,34,24,25,2,"#7d88a6");
+      for (var i=37;i<59;i+=5) px(c,i,17,1,9,"#8893b0");
+      px(c,11,8,18,8,OL); px(c,12,9,16,6,"#e7b27e"); px(c,12,9,16,2,"#f4cf9f"); // pillow
     },
-    desk: function (c) {
-      px(c,1,7,50,6,OL); px(c,2,8,48,4,WOOD.md);
-      px(c,2,8,48,1,WOOD.hi); px(c,2,11,48,1,WOOD.dk);
-      px(c,5,13,7,24,OL); px(c,6,14,5,22,WOOD.md); px(c,6,14,1,22,WOOD.lt);
-      px(c,39,13,7,24,OL); px(c,40,14,5,22,WOOD.md); px(c,40,14,1,22,WOOD.lt);
-      panel(c,11,16,28,9,WOOD); px(c,22,20,7,2,WOOD.dk); // drawer + pull
+    desk: function (c) {                                 // 52x38
+      px(c,1,4,50,6,OL); px(c,2,5,48,4,WOOD.md);
+      px(c,2,5,48,1,WOOD.hi); px(c,2,8,48,1,WOOD.dk);
+      px(c,4,10,12,26,OL); px(c,5,11,10,24,WOOD.md); px(c,5,11,2,24,WOOD.lt); // solid side
+      px(c,42,10,5,26,OL); px(c,43,11,3,24,WOOD.md);     // back leg
+      panel(c,20,12,24,9,WOOD); px(c,30,16,6,2,WOOD.dk); // drawer + pull
+      px(c,16,30,28,2,WOOD.dk);                          // stretcher
     },
-    chair: function (c) {
-      px(c,7,1,5,23,OL); px(c,8,2,3,21,WOOD.md); px(c,8,2,1,21,WOOD.lt);
-      px(c,9,4,15,3,OL); px(c,9,9,15,3,OL);              // back slats
-      px(c,9,5,13,1,WOOD.hi); px(c,9,10,13,1,WOOD.hi);
-      panel(c,6,23,22,6,WOOD);                            // seat
-      px(c,7,29,4,11,OL); px(c,8,30,2,10,WOOD.md);
-      px(c,23,29,4,11,OL); px(c,24,30,2,10,WOOD.md);
+    chair: function (c) {                                // 24x44, tall back
+      px(c,4,2,3,28,OL); px(c,5,3,1,27,WOOD.lt);
+      px(c,18,2,3,22,OL); px(c,19,3,1,21,WOOD.lt);
+      px(c,6,5,13,3,OL); px(c,7,6,11,1,WOOD.hi);         // back slats
+      px(c,6,11,13,3,OL); px(c,7,12,11,1,WOOD.hi);
+      panel(c,3,22,19,6,WOOD);                           // seat
+      px(c,5,28,3,15,OL); px(c,6,29,1,14,WOOD.md);
+      px(c,17,28,3,15,OL); px(c,18,29,1,14,WOOD.md);
     },
-    sidetable: function (c) {
-      panel(c,3,5,28,6,WOOD);                             // top
-      px(c,6,11,4,24,OL); px(c,7,12,2,22,WOOD.md);
-      px(c,24,11,4,24,OL); px(c,25,12,2,22,WOOD.md);
-      px(c,9,21,16,3,WOOD.dk);                            // stretcher
+    sidetable: function (c) {                            // 26x38
+      panel(c,2,4,22,6,WOOD);                            // top
+      px(c,4,10,3,26,OL); px(c,5,11,1,25,WOOD.lt);
+      px(c,19,10,3,26,OL); px(c,20,11,1,25,WOOD.lt);
+      px(c,5,24,16,4,OL); px(c,6,25,14,2,WOOD.md);       // lower shelf
     },
-    couch: function (c) {
-      px(c,1,11,62,24,OL);
-      px(c,2,12,60,22,CLO.md);
-      px(c,2,12,12,22,CLO.dk); px(c,50,12,12,22,CLO.dk); // arms
-      px(c,3,13,9,4,CLO.lt); px(c,51,13,9,4,CLO.lt);
-      px(c,15,14,16,9,CLO.lt); px(c,33,14,16,9,CLO.lt);  // cushions
-      px(c,15,14,16,2,CLO.hi); px(c,33,14,16,2,CLO.hi);
-      px(c,23,23,1,11,CLO.dk);
-      px(c,6,34,5,5,WOOD.dk); px(c,53,34,5,5,WOOD.dk);
+    couch: function (c) {                                // 60x34
+      px(c,2,8,56,24,OL); px(c,3,9,54,22,CLO.md);
+      px(c,3,9,54,6,CLO.lt); px(c,3,9,54,2,CLO.hi);      // backrest top
+      px(c,3,12,11,19,CLO.dk); px(c,46,12,11,19,CLO.dk); // arms
+      px(c,4,13,9,3,CLO.hi); px(c,47,13,9,3,CLO.hi);
+      px(c,15,17,14,11,CLO.lt); px(c,31,17,14,11,CLO.lt);// seat cushions
+      px(c,15,17,14,2,CLO.hi); px(c,31,17,14,2,CLO.hi);
+      px(c,29,17,2,11,CLO.dk);
+      px(c,7,31,4,3,WOOD.dk); px(c,49,31,4,3,WOOD.dk);   // feet
     },
     rug: function (c) {
       px(c,1,3,70,18,OL);
@@ -1113,38 +1153,45 @@
       for (i=6;i<68;i+=7) px(c,i,17,2,2,"#8f5a56");
     },
     // ---- lighting ----
-    floorlamp: function (c) {
-      px(c,5,1,24,3,OL); px(c,6,4,22,10,OL);
-      px(c,7,5,20,8,"#efd9a4"); px(c,7,5,20,2,"#fbeec4");
-      px(c,9,13,16,3,GLOW);
-      px(c,15,14,4,30,OL); px(c,16,15,2,29,WOOD.md);
-      px(c,9,44,16,5,OL); px(c,10,45,14,3,WOOD.md); px(c,10,45,14,1,WOOD.hi);
+    floorlamp: function (c) {                            // pole + drum shade
+      px(c,9,46,16,3,OL); px(c,10,47,14,1,WOOD.hi); px(c,10,48,14,1,WOOD.dk);
+      px(c,12,44,10,3,OL); px(c,13,44,8,2,MET.md);       // base riser
+      px(c,16,16,3,29,OL); px(c,17,16,1,29,MET.lt);      // pole
+      px(c,7,3,20,13,OL);                                // drum shade
+      px(c,8,4,18,11,"#efd9a4");
+      px(c,8,4,18,3,"#fbeec4"); px(c,8,4,5,11,"#f7e6b8");
+      px(c,8,12,18,3,"#d8b87a"); px(c,22,4,4,11,"#d2ad6e");
+      px(c,11,15,12,2,GLOW);
+      bloom(c,17,21,15);
     },
-    desklamp: function (c) {
-      px(c,4,26,26,5,OL); px(c,5,27,24,3,MET.md); px(c,5,27,24,1,MET.lt);
-      px(c,15,12,4,16,OL); px(c,16,13,2,15,MET.md);
-      px(c,8,4,16,3,OL); px(c,8,7,4,7,OL); px(c,9,7,14,2,MET.md);
-      px(c,9,5,14,2,MET.lt);
-      px(c,12,10,9,3,GLOW);
+    desklamp: function (c) {                             // articulated, domed
+      px(c,3,27,20,4,OL); px(c,4,28,18,2,MET.md); px(c,4,28,18,1,MET.lt);
+      px(c,11,14,3,14,OL); px(c,12,14,1,14,MET.lt);      // lower arm
+      px(c,11,11,15,3,OL); px(c,12,11,13,1,MET.lt);      // upper arm
+      px(c,21,4,11,9,OL); px(c,22,5,9,7,MET.md);         // dome head
+      px(c,22,5,9,2,MET.hi); px(c,22,5,3,7,MET.lt); px(c,29,5,2,7,MET.dk);
+      px(c,23,12,7,2,GLOW);
+      bloom(c,26,14,10);
     },
-    strlights: function (c) {
-      px(c,0,3,64,2,"#2f261c");
-      for (var i=4;i<62;i+=11){
-        var dy = (i%22===4)?6:9;
-        px(c,i,5,2,dy-5,"#2f261c");
-        px(c,i-2,dy,5,5,OL);
-        px(c,i-1,dy+1,3,3,(i%22===4)?"#f7c768":"#ef9f63");
-        dot(c,i,dy+1,"#fde7ad");
+    strlights: function (c) {                            // shaded warm bulbs
+      px(c,0,2,64,2,"#2f261c");
+      for (var i=5;i<60;i+=10){
+        var droop=(Math.floor(i/10)%2===0)?7:10;
+        px(c,i,4,1,droop-4,"#2f261c");
+        var warm=(Math.floor(i/10)%2===0)?"#f7c768":"#ef9f63";
+        px(c,i-2,droop,5,5,OL);
+        px(c,i-1,droop+1,3,3,warm); px(c,i-1,droop+1,3,1,"#fde7ad");
+        bloom(c,i,droop+2,5);
       }
     },
-    candle: function (c) {
-      px(c,6,12,14,22,OL);
-      px(c,7,13,12,20,CRM.md); px(c,7,13,4,20,CRM.hi); px(c,16,13,3,20,CRM.sh);
-      px(c,7,13,12,2,CRM.hi);
-      px(c,12,6,2,7,"#2f261c");                    // wick
-      px(c,10,0,6,7,OL); px(c,11,1,4,5,FLAME);
-      px(c,12,1,2,3,"#fde7ad");
-      px(c,9,16,3,3,GLOW);
+    candle: function (c) {                               // pillar + melt + flame
+      px(c,5,12,16,22,OL);
+      px(c,6,13,14,20,CRM.md); px(c,6,13,4,20,CRM.hi); px(c,17,13,3,20,CRM.sh);
+      px(c,6,13,14,2,"#fff8e6");
+      px(c,8,11,10,3,OL); px(c,9,12,8,2,"#fff1cf");      // melted top
+      px(c,12,6,2,6,"#2f261c");                          // wick
+      px(c,10,0,6,7,OL); px(c,11,1,4,5,FLAME); px(c,12,1,2,3,"#fff0c0");
+      bloom(c,13,5,11);
     },
     // ---- plants (reference style: outlined, shaded) ----
     succulent: function (c) {
@@ -1199,13 +1246,19 @@
       px(c,9,9,7,7,"#e6b483"); px(c,22,8,8,9,"#cf8d83");
       px(c,5,5,30,3,"#eef3f8");
     },
-    clock: function (c) {
-      px(c,3,1,28,2,OL); px(c,1,3,32,28,OL);
-      px(c,2,4,30,26,"#efe2c2"); px(c,2,4,30,3,"#fbf3da");
-      px(c,5,7,24,20,OL); px(c,6,8,22,18,"#f7efd7");
-      for (var a=0;a<12;a++){ var ang=a*Math.PI/6;
-        dot(c, Math.round(17+Math.sin(ang)*9), Math.round(17-Math.cos(ang)*8), OL); }
-      px(c,16,11,2,7,OL); px(c,17,16,6,2,OL); dot(c,17,17,"#b56a32");
+    clock: function (c) {                                // detail >=2px so it
+      px(c,5,1,24,2,OL); px(c,2,3,30,30,OL);             // survives kof downscale
+      px(c,3,4,28,28,WOOD.md);
+      px(c,3,4,28,2,WOOD.hi); px(c,3,4,2,28,WOOD.lt);
+      px(c,3,30,28,2,WOOD.dk); px(c,29,4,2,28,WOOD.dk);
+      px(c,6,7,22,22,OL); px(c,7,8,20,20,"#f7efd7"); px(c,7,8,20,3,"#fff8e6");
+      var cxx=17, cyy=18;
+      for (var a=0;a<12;a++){ var ang=a*Math.PI/6, big=(a%3===0);
+        var rx=Math.round(cxx+Math.sin(ang)*8), ry=Math.round(cyy-Math.cos(ang)*8);
+        var sz=big?3:2; px(c, rx-(sz>>1), ry-(sz>>1), sz, sz, OL); }
+      px(c,16,11,2,8,OL);                                // hour hand
+      px(c,17,17,8,2,OL);                                // minute hand
+      px(c,15,16,4,4,OL); px(c,16,17,2,2,"#b56a32");     // hub
     },
     mirror: function (c) {
       px(c,1,0,28,2,OL); px(c,1,40,28,2,OL);
@@ -1250,85 +1303,99 @@
       px(c,8,5,3,1,MET.lt);                            // tonearm
     },
     // ---- expansion: furniture ----
-    armchair: function (c) {
-      px(c,3,10,34,26,OL); px(c,4,11,32,24,CLO.md); px(c,4,11,32,3,CLO.hi);
-      px(c,3,14,9,22,OL); px(c,4,15,7,20,CLO.dk);
-      px(c,28,14,9,22,OL); px(c,29,15,7,20,CLO.dk);
-      px(c,11,5,18,13,OL); px(c,12,6,16,11,CLO.lt); px(c,12,6,16,2,CLO.hi);
-      px(c,12,23,16,9,OL); px(c,13,24,14,7,CLO.lt);
-      px(c,7,36,4,4,WOOD.dk); px(c,29,36,4,4,WOOD.dk);
+    armchair: function (c) {                             // 40x42, clear arms+back
+      px(c,6,4,28,28,OL); px(c,7,5,26,26,CLO.md); px(c,7,5,26,3,CLO.hi);
+      px(c,9,8,22,12,CLO.lt); px(c,9,8,22,2,CLO.hi);     // back cushion
+      px(c,2,16,9,22,OL); px(c,3,17,7,20,CLO.md); px(c,3,17,7,3,CLO.hi); // arm
+      px(c,29,16,9,22,OL); px(c,30,17,7,20,CLO.md); px(c,30,17,7,3,CLO.hi);
+      px(c,9,24,22,10,OL); px(c,10,25,20,8,CLO.lt); px(c,10,25,20,2,CLO.hi); // seat
+      px(c,6,38,4,4,WOOD.dk); px(c,30,38,4,4,WOOD.dk);   // legs
     },
-    bookshelf: function (c) {
-      px(c,3,1,34,52,OL); px(c,4,2,32,50,WOOD.md);
-      px(c,4,2,32,2,WOOD.hi); px(c,4,2,2,50,WOOD.lt); px(c,34,2,2,50,WOOD.dk);
+    bookshelf: function (c) {                            // 40x58, 4 shelves
+      px(c,2,1,36,55,OL); px(c,3,2,34,53,WOOD.md);
+      px(c,3,2,34,2,WOOD.hi); px(c,3,2,2,53,WOOD.lt); px(c,35,2,2,53,WOOD.dk);
       var cols=["#b06a4f","#6f8b7c","#9c7c5e","#8a6f9c","#bf9a4a"];
-      for (var s=0;s<3;s++){ var sy=5+s*16;
-        px(c,6,sy,28,13,"#3a2e24");
-        for (var b=0;b<7;b++){ var bx=7+b*4, bh=9+((b+s)%3)*2;
-          px(c,bx,sy+13-bh,3,bh,cols[(b+s)%5]); px(c,bx,sy+13-bh,3,1,CRM.hi); }
-        px(c,5,sy+13,30,2,WOOD.dk); }
+      for (var s=0;s<4;s++){ var sy=4+s*13;
+        px(c,5,sy,30,12,"#3a2e24");
+        for (var b=0;b<8;b++){ var bx=6+b*4, bh=8+((b+s)%3)*2;
+          px(c,bx,sy+12-bh,3,bh,cols[(b+s)%5]); px(c,bx,sy+12-bh,3,1,CRM.hi); }
+        px(c,4,sy+12,32,1,WOOD.dk); }
+      px(c,4,56,4,2,WOOD.dk); px(c,32,56,4,2,WOOD.dk);
     },
-    coffeetable: function (c) {
-      px(c,1,4,44,7,OL); px(c,2,5,42,5,WOOD.md);
-      px(c,2,5,42,1,WOOD.hi); px(c,2,9,42,1,WOOD.dk);
-      px(c,5,11,4,14,OL); px(c,6,12,2,12,WOOD.md);
-      px(c,37,11,4,14,OL); px(c,38,12,2,12,WOOD.md);
-      px(c,9,16,28,2,WOOD.dk);
+    coffeetable: function (c) {                          // 46x22
+      px(c,1,3,44,6,OL); px(c,2,4,42,4,WOOD.md);
+      px(c,2,4,42,1,WOOD.hi); px(c,2,7,42,1,WOOD.dk);
+      px(c,5,9,4,12,OL); px(c,6,10,2,11,WOOD.md);
+      px(c,37,9,4,12,OL); px(c,38,10,2,11,WOOD.md);
+      px(c,8,15,30,3,OL); px(c,9,16,28,1,WOOD.md);       // lower shelf
     },
-    floorcushion: function (c) {
-      px(c,2,4,30,12,OL); px(c,3,5,28,10,CLO.md);
-      px(c,3,5,28,3,CLO.lt); px(c,3,13,28,2,CLO.dk);
-      dot(c,7,9,CLO.hi); dot(c,26,9,CLO.hi); px(c,15,6,3,8,CLO.dk);
+    floorcushion: function (c) {                         // 34x16
+      px(c,2,3,30,11,OL); px(c,3,4,28,9,CLO.md);
+      px(c,3,4,28,3,CLO.lt); px(c,3,11,28,2,CLO.dk);
+      dot(c,17,8,CLO.dk); px(c,5,13,24,1,OL);
     },
-    ottoman: function (c) {
-      px(c,2,4,26,12,OL); px(c,3,5,24,10,CLO.md);
-      px(c,3,5,24,3,CLO.lt); px(c,3,5,24,1,CLO.hi);
-      px(c,4,16,3,5,WOOD.dk); px(c,23,16,3,5,WOOD.dk);
-      px(c,8,8,14,1,CLO.dk); px(c,14,5,2,10,CLO.dk);
+    ottoman: function (c) {                              // 30x22
+      px(c,2,4,26,13,OL); px(c,3,5,24,11,CLO.md);
+      px(c,3,5,24,3,CLO.lt); px(c,3,5,24,1,CLO.hi); px(c,3,14,24,2,CLO.dk);
+      dot(c,9,9,CLO.dk); dot(c,15,9,CLO.dk); dot(c,21,9,CLO.dk);
+      px(c,4,17,3,4,WOOD.dk); px(c,23,17,3,4,WOOD.dk);
     },
-    screen: function (c) {
-      for (var p=0;p<3;p++){ var x=2+p*14, y=2+(p===1?0:2), h=42-(p===1?0:2);
-        px(c,x,y,13,h,OL);
-        px(c,x+1,y+1,11,h-2,(p%2?"#8a96a8":"#9aa6b6"));
-        px(c,x+1,y+1,11,2,"#b6c0cd");
-        px(c,x+2,y+5,9,h-12,(p%2?"#7a8698":"#8893a3")); }
+    screen: function (c) {                               // 50x46, folded
+      for (var p=0;p<3;p++){ var x=2+p*16, y=3+(p===1?-1:0), h=39+(p===1?2:0);
+        px(c,x,y,15,h,OL);
+        px(c,x+1,y+1,13,h-2,(p%2?"#8a96a8":"#9aa6b6"));
+        px(c,x+1,y+1,13,2,"#b6c0cd");
+        px(c,x+2,y+6,11,h-12,(p%2?"#7a8698":"#8893a3")); }
     },
     // ---- expansion: lighting ----
-    lantern: function (c) {
-      px(c,10,30,4,10,OL); px(c,11,31,2,9,WOOD.md);
-      px(c,5,38,14,3,OL); px(c,6,39,12,1,WOOD.md);
-      px(c,4,4,16,26,OL);
-      px(c,5,5,14,24,"#f0c98a"); px(c,5,5,14,3,"#f9e6bb");
-      px(c,5,5,4,24,"#f7dca0"); px(c,15,5,4,24,"#d8a866");
-      px(c,8,12,8,10,GLOW);
-      px(c,9,2,6,3,OL); px(c,10,3,4,1,WOOD.hi);
+    lantern: function (c) {                              // ribbed paper lantern
+      px(c,9,1,6,3,OL); px(c,10,2,4,1,WOOD.hi);          // top cap
+      px(c,11,3,2,4,"#2f261c");                          // cord
+      px(c,4,7,16,26,OL);
+      px(c,5,8,14,24,"#f0c98a"); px(c,5,8,14,3,"#f9e6bb");
+      px(c,5,8,4,24,"#f7dca0"); px(c,15,8,4,24,"#d8a866");
+      for (var r=11;r<32;r+=6) px(c,5,r,14,1,"#caa06a");  // ribs
+      px(c,7,15,10,12,GLOW);
+      px(c,8,33,8,3,OL); px(c,9,34,6,1,WOOD.md);          // finial
+      px(c,11,36,2,4,"#2f261c");
+      bloom(c,12,20,13);
     },
-    saltlamp: function (c) {
-      px(c,4,18,12,5,OL); px(c,5,19,10,3,WOOD.md); px(c,5,19,10,1,WOOD.hi);
-      px(c,5,4,11,15,OL);
-      px(c,6,5,9,13,"#e58a5e"); px(c,6,5,4,13,"#f0a878"); px(c,11,5,4,13,"#cf6f44");
-      px(c,8,8,5,6,GLOW); dot(c,9,7,"#ffe6a6");
+    saltlamp: function (c) {                             // glowing rock chunk
+      px(c,3,18,14,5,OL); px(c,4,19,12,3,WOOD.md);
+      px(c,4,19,12,1,WOOD.hi); px(c,4,21,12,1,WOOD.dk);
+      px(c,6,4,9,3,OL); px(c,4,7,13,5,OL); px(c,5,12,11,6,OL);  // stepped form
+      px(c,7,5,7,2,"#f0a878"); px(c,5,8,11,4,"#e58a5e"); px(c,6,13,9,4,"#cf6f44");
+      px(c,5,8,4,9,"#f4b488"); px(c,13,8,3,9,"#bf5f3a");
+      px(c,8,9,5,6,GLOW);
+      bloom(c,10,12,11);
     },
-    fairyjar: function (c) {
-      px(c,4,3,10,3,OL); px(c,5,4,8,1,MET.lt);
-      px(c,3,6,12,16,OL); px(c,4,7,10,14,"#bcd0d6");
-      px(c,4,7,3,14,"#d6e4e8"); px(c,11,7,3,14,"#9bb3ba");
-      dot(c,6,11,GLOW); dot(c,9,9,"#ffe6a6"); dot(c,11,13,GLOW);
-      dot(c,7,16,"#ffe6a6"); dot(c,10,17,GLOW);
+    fairyjar: function (c) {                             // jar of fairy lights
+      px(c,4,2,10,3,OL); px(c,5,3,8,1,MET.lt); px(c,5,4,8,1,MET.dk);  // lid
+      px(c,3,5,12,17,OL); px(c,4,6,10,15,"#bcd0d6");
+      px(c,4,6,3,15,"#dbe7ea"); px(c,11,6,3,15,"#9bb3ba");
+      px(c,6,9,2,2,GLOW); px(c,10,8,2,2,"#fff0c0");      // bulbs (>=2px)
+      px(c,7,14,2,2,"#fff0c0"); px(c,10,16,2,2,GLOW); px(c,5,18,2,2,GLOW);
+      bloom(c,9,13,10);
     },
-    arclamp: function (c) {
-      px(c,4,48,20,4,OL); px(c,5,49,18,2,MET.md);
-      px(c,12,12,3,38,OL); px(c,13,12,1,38,MET.lt);
-      px(c,13,9,18,4,OL); px(c,14,10,16,2,MET.md);
-      px(c,28,8,10,10,OL); px(c,29,9,8,8,"#efd9a4"); px(c,29,9,8,2,"#fbeec4");
-      px(c,30,16,6,3,GLOW);
+    arclamp: function (c) {                              // arc pole + dome
+      px(c,3,49,22,4,OL); px(c,4,50,20,2,MET.md); px(c,4,50,20,1,MET.lt);
+      px(c,11,47,7,3,OL); px(c,12,47,5,2,MET.dk);        // base riser
+      px(c,13,16,3,32,OL); px(c,14,16,1,32,MET.lt);      // pole
+      px(c,15,11,14,3,OL); px(c,16,11,12,1,MET.lt);      // arc
+      px(c,27,12,3,8,OL); px(c,28,12,1,8,MET.md);
+      px(c,24,16,14,9,OL); px(c,25,17,12,7,MET.md);      // dome
+      px(c,25,17,12,2,MET.hi); px(c,25,17,4,7,MET.lt); px(c,34,17,2,7,MET.dk);
+      px(c,27,23,8,2,GLOW);
+      bloom(c,31,26,12);
     },
     // ---- expansion: plants ----
-    monstera: function (c) {
-      var s=pot(c,22,40,24,18,12,5,TERR);
-      px(c,21,16,3,s-16,OL); px(c,22,16,1,s-16,GRN.dk);
-      leaf(c,12,4,18,22,-2); leaf(c,32,7,17,20,2);
-      leaf(c,22,0,18,20,0); leaf(c,9,20,14,16,-2); leaf(c,34,22,13,15,2);
+    monstera: function (c) {                             // few big SPLIT leaves
+      var s=pot(c,22,42,24,18,12,5,CER);                 // ceramic (≠ fiddle)
+      px(c,20,18,5,s-18,OL); px(c,21,18,3,s-18,GRN.dk);  // thick stems
+      px(c,21,18,1,s-18,GRN.md);
+      mleaf(c,16,s-2,22,30,-3);
+      mleaf(c,30,s-4,22,28, 3);
+      mleaf(c,23,s-1,25,34, 0);
     },
     pothos: function (c) {
       px(c,9,1,2,5,OL); px(c,23,1,2,5,OL);
@@ -1344,21 +1411,37 @@
       cactusCol(c,6,8,6,14); cactusCol(c,13,4,7,18); cactusCol(c,21,11,5,11);
       dot(c,8,9,GRN.hi); dot(c,16,6,"#e6a59c");
     },
-    bonsai: function (c) {
-      px(c,4,24,26,5,OL); px(c,5,25,24,3,WOOD.md); px(c,5,25,24,1,WOOD.hi);
-      px(c,15,12,4,12,OL); px(c,16,12,2,12,WOOD.dk); px(c,16,16,7,2,WOOD.dk);
-      for (var i=0;i<3;i++){ var cx=10+i*8, cy=8+(i===1?-2:0);
-        px(c,cx-6,cy,12,7,OL); px(c,cx-5,cy+1,10,5,GRN.md);
-        px(c,cx-5,cy+1,10,2,GRN.lt); dot(c,cx,cy+2,GRN.hi); }
+    bonsai: function (c) {                               // gnarled trunk + pads
+      px(c,3,24,28,6,OL); px(c,4,25,26,4,TERR.md);        // shallow tray
+      px(c,4,25,26,1,TERR.hi); px(c,4,28,26,1,TERR.sh);
+      px(c,6,23,22,2,TERR.soil);
+      px(c,15,18,5,7,OL); px(c,16,18,3,7,WOOD.md); px(c,16,18,1,7,WOOD.lt); // S-trunk
+      px(c,13,13,6,6,OL); px(c,14,13,4,6,WOOD.md);
+      px(c,17,9,6,6,OL); px(c,18,9,4,6,WOOD.md); px(c,18,9,1,6,WOOD.lt);
+      px(c,10,9,5,3,OL); px(c,11,9,3,3,WOOD.dk);          // jutting branch
+      function pad(x0,y,pw,ph){
+        px(c,x0-1,y-1,pw+2,ph+2,OL); px(c,x0,y,pw,ph,GRN.md);
+        px(c,x0,y,pw,2,GRN.lt); px(c,x0,y,Math.round(pw*0.4),ph,GRN.lt);
+        px(c,x0,y+ph-1,pw,1,GRN.dk);
+        dot(c,x0+2,y+1,GRN.hi); dot(c,x0+pw-3,y+1,GRN.hi);
+      }
+      pad(6,2,14,7); pad(18,0,14,8); pad(2,9,11,6); pad(20,9,12,6);
     },
-    fern: function (c) {
-      var s=pot(c,20,34,22,16,12,5,CER);
-      for (var i=0;i<7;i++){ var a=(i-3)*0.34;
-        var ex=20+Math.sin(a)*17, ey=(s-2)-Math.cos(a)*30, steps=12;
-        for (var n=0;n<steps;n++){ var t=n/steps;
-          var xx=Math.round(20+(ex-20)*t), yy=Math.round((s-2)+(ey-(s-2))*t);
-          dot(c,xx,yy,GRN.dk);
-          if (n%2===0){ dot(c,xx-2,yy,GRN.md); dot(c,xx+2,yy,GRN.lt); } } }
+    fern: function (c) {                                  // arching feathery fronds
+      var s=pot(c,20,36,22,16,12,5,CER);
+      function frond(ang){
+        var steps=14, L=24, x0=20, y0=s-2;
+        for (var n=1;n<=steps;n++){
+          var t=n/steps;
+          var rx=Math.round(x0+Math.sin(ang)*L*t);
+          var ry=Math.round(y0-Math.cos(ang)*L*t - Math.sin(t*Math.PI)*4);
+          var pl=Math.max(1,Math.round((1-t)*5));
+          px(c,rx-pl,ry,pl,1,GRN.md); px(c,rx+1,ry,pl,1,GRN.md);
+          dot(c,rx,ry,GRN.dk);
+          if (n%2===0){ dot(c,rx-pl,ry,GRN.lt); dot(c,rx+pl,ry,GRN.dk); }
+        }
+      }
+      for (var i=-3;i<=3;i++) frond(i*0.26);
     },
     airplant: function (c) {
       px(c,5,14,12,5,OL); px(c,6,15,10,3,CER.md); px(c,6,15,10,1,CER.hi);
@@ -1459,34 +1542,138 @@
     }
   };
 
-  function spriteBox(id) {
-    var b = {
-      bed:[60,40],desk:[52,40],chair:[34,42],sidetable:[34,38],couch:[64,40],rug:[72,24],
-      floorlamp:[34,50],desklamp:[34,32],strlights:[64,20],candle:[26,36],
-      succulent:[32,40],hangvine:[34,48],fiddle:[40,52],mossrock:[36,32],
-      poster:[32,40],print:[40,34],clock:[34,34],mirror:[32,42],
-      mug:[32,30],books:[36,30],radio:[40,32],vinyl:[44,34],
-      armchair:[40,40],bookshelf:[40,54],coffeetable:[46,26],floorcushion:[34,18],
-      ottoman:[30,22],screen:[44,46],lantern:[24,42],saltlamp:[20,24],
-      fairyjar:[18,24],arclamp:[40,54],monstera:[44,54],pothos:[34,44],
-      cactrio:[30,30],bonsai:[34,30],fern:[40,46],airplant:[22,20],
-      pennant:[42,16],tapestry:[32,42],floatshelf:[36,12],photowire:[42,20],
-      roundmirror:[28,30],botanical:[26,30],teaset:[30,18],cassette:[38,20],
-      crate:[30,28],deskplant:[20,24],incense:[20,22],blanket:[34,22],
-      pouf:[28,22],basket:[24,22]
-    };
-    return b[id] || [32,32];
+  // "front" (end-on / facing the viewer) variants for the Turn-able pieces.
+  // Same palette/helpers; boxes are BOX_FRONT.
+  var SPRITES_FRONT = {
+    bed: function (c) {                                  // 42x40, foot-end
+      px(c,5,34,32,2,OL);
+      px(c,6,35,3,4,WOOD.dk); px(c,33,35,3,4,WOOD.dk);
+      panel(c,4,2,34,9,WOOD);                            // headboard behind
+      px(c,6,11,30,21,OL);
+      px(c,7,12,28,19,"#9aa6c4"); px(c,7,12,28,3,"#b3bedb");
+      for (var i=10;i<35;i+=5) px(c,i,15,1,15,"#8893b0");
+      px(c,8,9,12,7,OL); px(c,9,10,10,5,"#e7b27e");      // pillow L
+      px(c,22,9,12,7,OL); px(c,23,10,10,5,"#e7b27e");    // pillow R
+      panel(c,5,30,32,5,WOOD);                           // footboard
+    },
+    couch: function (c) {                                // 44x38
+      px(c,2,4,40,28,OL); px(c,3,5,38,27,CLO.md);
+      px(c,3,5,38,7,CLO.lt); px(c,3,5,38,2,CLO.hi);
+      px(c,3,10,8,22,CLO.dk); px(c,33,10,8,22,CLO.dk);   // arms
+      px(c,12,15,9,15,CLO.lt); px(c,23,15,9,15,CLO.lt);
+      px(c,12,15,9,2,CLO.hi); px(c,23,15,9,2,CLO.hi);
+      px(c,6,32,4,4,WOOD.dk); px(c,34,32,4,4,WOOD.dk);
+    },
+    armchair: function (c) {                             // 34x42
+      px(c,4,3,26,30,OL); px(c,5,4,24,29,CLO.md); px(c,5,4,24,3,CLO.hi);
+      px(c,8,7,18,14,CLO.lt); px(c,8,7,18,2,CLO.hi);
+      px(c,2,14,7,24,OL); px(c,3,15,5,22,CLO.md); px(c,3,15,5,3,CLO.hi);
+      px(c,25,14,7,24,OL); px(c,26,15,5,22,CLO.md); px(c,26,15,5,3,CLO.hi);
+      px(c,8,24,18,11,OL); px(c,9,25,16,9,CLO.lt); px(c,9,25,16,2,CLO.hi);
+      px(c,7,38,4,4,WOOD.dk); px(c,23,38,4,4,WOOD.dk);
+    },
+    chair: function (c) {                                // 22x44
+      px(c,4,2,3,26,OL); px(c,5,3,1,25,WOOD.lt);
+      px(c,15,2,3,26,OL); px(c,16,3,1,25,WOOD.lt);
+      px(c,6,5,9,3,OL); px(c,6,11,9,3,OL); px(c,6,17,9,3,OL);
+      panel(c,3,24,16,6,WOOD);
+      px(c,4,30,3,13,OL); px(c,5,31,1,12,WOOD.md);
+      px(c,15,30,3,13,OL); px(c,16,31,1,12,WOOD.md);
+    },
+    desk: function (c) {                                 // 40x40
+      px(c,1,4,38,6,OL); px(c,2,5,36,4,WOOD.md);
+      px(c,2,5,36,1,WOOD.hi); px(c,2,8,36,1,WOOD.dk);
+      px(c,3,10,9,26,OL); px(c,4,11,7,24,WOOD.md); px(c,4,11,2,24,WOOD.lt);
+      px(c,28,10,9,26,OL); px(c,29,11,7,24,WOOD.md); px(c,29,11,2,24,WOOD.lt);
+      panel(c,12,11,16,10,WOOD); px(c,18,15,4,2,WOOD.dk);
+      px(c,12,33,16,3,WOOD.dk);
+    },
+    sidetable: function (c) {                            // 24x38
+      panel(c,2,4,20,6,WOOD);
+      px(c,4,10,3,26,OL); px(c,5,11,1,25,WOOD.lt);
+      px(c,17,10,3,26,OL); px(c,18,11,1,25,WOOD.lt);
+      px(c,5,24,14,4,OL); px(c,6,25,12,2,WOOD.md);
+    },
+    coffeetable: function (c) {                          // 38x24
+      px(c,1,3,36,6,OL); px(c,2,4,34,4,WOOD.md);
+      px(c,2,4,34,1,WOOD.hi); px(c,2,7,34,1,WOOD.dk);
+      px(c,4,9,4,13,OL); px(c,5,10,2,12,WOOD.md);
+      px(c,30,9,4,13,OL); px(c,31,10,2,12,WOOD.md);
+      px(c,8,16,22,2,WOOD.dk);
+    },
+    ottoman: function (c) {                              // 26x22
+      px(c,2,4,22,13,OL); px(c,3,5,20,11,CLO.md);
+      px(c,3,5,20,3,CLO.lt); px(c,3,5,20,1,CLO.hi); px(c,3,14,20,2,CLO.dk);
+      dot(c,8,9,CLO.dk); dot(c,13,9,CLO.dk); dot(c,18,9,CLO.dk);
+      px(c,4,17,3,4,WOOD.dk); px(c,19,17,3,4,WOOD.dk);
+    },
+    bookshelf: function (c) {                            // 34x58
+      px(c,1,1,32,55,OL); px(c,2,2,30,53,WOOD.md);
+      px(c,2,2,30,2,WOOD.hi); px(c,2,2,2,53,WOOD.lt); px(c,30,2,2,53,WOOD.dk);
+      var cols=["#b06a4f","#6f8b7c","#9c7c5e","#8a6f9c","#bf9a4a"];
+      for (var s=0;s<4;s++){ var sy=4+s*13;
+        px(c,4,sy,26,12,"#3a2e24");
+        for (var b=0;b<7;b++){ var bx=5+b*4, bh=8+((b+s)%3)*2;
+          px(c,bx,sy+12-bh,3,bh,cols[(b+s)%5]); px(c,bx,sy+12-bh,3,1,CRM.hi); }
+        px(c,3,sy+12,28,1,WOOD.dk); }
+      px(c,3,56,4,2,WOOD.dk); px(c,27,56,4,2,WOOD.dk);
+    },
+    screen: function (c) {                               // 44x46, straight on
+      for (var p=0;p<3;p++){ var x=2+p*14;
+        px(c,x,3,13,40,OL);
+        px(c,x+1,4,11,38,(p%2?"#8a96a8":"#9aa6b6"));
+        px(c,x+1,4,11,2,"#b6c0cd");
+        px(c,x+2,9,9,28,(p%2?"#7a8698":"#8893a3")); }
+    }
+  };
+
+  // side-view art-canvas boxes (px). Final on-floor size = box * ITEM_K *
+  // floorScale, so relative footprints read true (see ORDER comment below).
+  var BOX_SIDE = {
+    bed:[68,30],desk:[52,38],chair:[24,44],sidetable:[26,38],couch:[60,34],rug:[72,24],
+    floorlamp:[34,50],desklamp:[34,32],strlights:[64,20],candle:[26,36],
+    succulent:[32,40],hangvine:[34,48],fiddle:[40,52],mossrock:[36,32],
+    poster:[32,40],print:[40,34],clock:[34,34],mirror:[32,42],
+    mug:[32,30],books:[36,30],radio:[40,32],vinyl:[44,34],
+    armchair:[40,42],bookshelf:[40,58],coffeetable:[46,22],floorcushion:[34,16],
+    ottoman:[30,22],screen:[50,46],lantern:[24,42],saltlamp:[20,24],
+    fairyjar:[18,24],arclamp:[40,54],monstera:[44,54],pothos:[34,44],
+    cactrio:[30,30],bonsai:[34,30],fern:[40,46],airplant:[22,20],
+    pennant:[42,16],tapestry:[32,42],floatshelf:[36,12],photowire:[42,20],
+    roundmirror:[28,30],botanical:[26,30],teaset:[30,18],cassette:[38,20],
+    crate:[30,28],deskplant:[20,24],incense:[20,22],blanket:[34,22],
+    pouf:[28,22],basket:[24,22]
+  };
+  // end-on / facing-the-viewer boxes for the rotatable floor furniture
+  var BOX_FRONT = {
+    bed:[42,40], couch:[44,38], armchair:[34,42], chair:[22,44],
+    desk:[40,40], sidetable:[24,38], coffeetable:[38,24], ottoman:[26,22],
+    bookshelf:[34,58], screen:[44,46]
+  };
+  // only these can be Turned (side <-> front); everything else stays side
+  var ROTATABLE = { bed:1, couch:1, armchair:1, chair:1, desk:1,
+    sidetable:1, coffeetable:1, ottoman:1, bookshelf:1, screen:1 };
+  function orientOf(id){
+    var p = S && S.placedItems && S.placedItems[id];
+    return (p && p.orient === "front" && ROTATABLE[id]) ? "front" : "side";
   }
-  // per-item base scale so things read at believable relative sizes
-  // (a mug is tiny next to a couch). Multiplies the placement scale.
+  function spriteBox(id, orient) {
+    orient = orient || orientOf(id);
+    if (orient === "front" && BOX_FRONT[id]) return BOX_FRONT[id];
+    return BOX_SIDE[id] || [32,32];
+  }
+  // per-item base scale so things read at believable relative sizes.
+  // Rendered-width order (box[0]*K): bed > couch > screen > desk >
+  // coffeetable ≈ bookshelf > armchair > floorcushion > ottoman ≈ chair ≈
+  // sidetable; clutter/plants kept small against the big pieces.
   var ITEM_K = {
-    couch:1.00, bed:1.00, desk:0.95, sidetable:0.80, chair:0.86, rug:1.05,
+    couch:1.05, bed:1.65, desk:0.85, sidetable:0.72, chair:0.85, rug:1.05,
     floorlamp:0.95, fiddle:1.00, hangvine:0.80, strlights:0.85,
-    poster:0.78, print:0.80, clock:0.60, mirror:0.85,
+    poster:0.78, print:0.80, clock:0.85, mirror:0.85,
     mug:0.42, books:0.55, radio:0.52, vinyl:0.64, candle:0.46,
     succulent:0.52, mossrock:0.52, desklamp:0.60,
-    armchair:0.92, bookshelf:0.98, coffeetable:0.90, floorcushion:0.80,
-    ottoman:0.76, screen:0.95, lantern:0.80, saltlamp:0.55, fairyjar:0.50,
+    armchair:0.80, bookshelf:0.95, coffeetable:0.85, floorcushion:0.78,
+    ottoman:0.70, screen:0.92, lantern:0.80, saltlamp:0.55, fairyjar:0.50,
     arclamp:0.95, monstera:1.00, pothos:0.80, cactrio:0.56, bonsai:0.62,
     fern:0.92, airplant:0.46, pennant:0.80, tapestry:0.82, floatshelf:0.80,
     photowire:0.80, roundmirror:0.70, botanical:0.68, teaset:0.50,
@@ -1495,12 +1682,14 @@
   };
   function kof(id){ return ITEM_K[id]||1; }
   function drawScaleOf(id){ return worldS(id)*kof(id); }   // resolved render scale
-  function drawSprite(c, id, x, y, flip, scale) {
-    var fn = SPRITES[id]; if (!fn) return;
+  function drawSprite(c, id, x, y, flip, scale, orient) {
+    orient = orient || orientOf(id);
+    var fn = (orient === "front" && SPRITES_FRONT[id]) ? SPRITES_FRONT[id] : SPRITES[id];
+    if (!fn) return;
     scale = scale || 1;
     c.save(); c.translate(Math.round(x), Math.round(y));
     if (scale !== 1) c.scale(scale, scale);
-    if (flip){ c.translate(spriteBox(id)[0], 0); c.scale(-1, 1); }
+    if (flip){ c.translate(spriteBox(id, orient)[0], 0); c.scale(-1, 1); }
     fn(c); c.restore();
   }
 
@@ -2392,7 +2581,7 @@
     // drag preview
     if (dragging && dragging.preview) {
       ctx.globalAlpha = dragging.preview.ok ? 0.85 : 0.4;
-      drawSprite(ctx, dragging.id, dragging.preview.x, dragging.preview.y, dragging.flip, dragging.preview.s*kof(dragging.id));
+      drawSprite(ctx, dragging.id, dragging.preview.x, dragging.preview.y, dragging.flip, dragging.preview.s*kof(dragging.id), dragging.orient);
       ctx.globalAlpha = 1;
     }
 
@@ -2590,13 +2779,13 @@
   // downscales big sprites, integer-scales small ones)
   function thumb(id, maxPx) {
     maxPx = maxPx || 48;
-    var box=spriteBox(id), w=box[0], h=box[1];
+    var box=spriteBox(id,"side"), w=box[0], h=box[1];   // inventory always side
     var scale = Math.min(maxPx/w, maxPx/h);
     if (scale >= 1) scale = Math.floor(scale);
     var cv=document.createElement("canvas");
     cv.width=Math.round(w*scale); cv.height=Math.round(h*scale);
     var cc=cv.getContext("2d"); cc.imageSmoothingEnabled=false; cc.scale(scale,scale);
-    drawSprite(cc,id,0,0);
+    drawSprite(cc,id,0,0,false,1,"side");
     return cv;
   }
   // swatch tile for things without a sprite (views / surface styles)
@@ -2852,14 +3041,15 @@
     e.preventDefault();
     hideMenu();
     var flip = (from==="room" && S.placedItems[id]) ? !!S.placedItems[id].flip : false;
-    dragging={ id:id, from:from, flip:flip, preview:null };
+    var orient = (from==="room" && S.placedItems[id]) ? orientOf(id) : "side";
+    dragging={ id:id, from:from, flip:flip, orient:orient, preview:null };
     // ghost matches the sprite's on-screen size in the room
     var disp = (canvas.getBoundingClientRect().width / VW) * kof(id);
-    var box = spriteBox(id);
+    var box = spriteBox(id, orient);
     var gc = document.createElement("canvas");
     gc.width = Math.max(1,Math.round(box[0]*disp)); gc.height = Math.max(1,Math.round(box[1]*disp));
     var gx = gc.getContext("2d"); gx.imageSmoothingEnabled=false; gx.scale(disp,disp);
-    drawSprite(gx, id, 0, 0, flip);
+    drawSprite(gx, id, 0, 0, flip, 1, orient);
     ghost.src=gc.toDataURL(); ghost.style.display="block";
     moveGhost(e);
     if (from==="room"){ closeModals(); }
@@ -2888,7 +3078,9 @@
     var d = (p.x>=0&&p.x<=VW&&p.y>=0&&p.y<=VH) ? validDrop(BY_ID[id], p.x, p.y) : null;
     if (d || (from==="room" && !inStage)) pushUndo();
     if (d){
-      var ent={ x:d.x, y:d.y, s:d.s, surf:d.surf, flip: !!dragging.flip, z: nextZ() };
+      var ent={ x:d.x, y:d.y, s:d.s, surf:d.surf, flip: !!dragging.flip,
+                orient: (dragging.orient==="front" && ROTATABLE[id]) ? "front" : "side",
+                z: nextZ() };
       if (d.surf==="furniture" && d.parent && d.parent!==id){
         ent.parent=d.parent; ent.ox=d.ox; ent.oy=d.oy;
       }
@@ -3041,6 +3233,7 @@
   var menu=document.getElementById("ctxMenu"), roomMenu=document.getElementById("ctxRoom"), menuId=null;
   var ctxToggle=document.getElementById("ctxToggle");
   var ctxNext=document.getElementById("ctxNext");
+  var ctxTurn=document.getElementById("ctxTurn");
   function hideMenu(){ menu.style.display="none"; roomMenu.style.display="none"; menuId=null; }
   function place(el,x,y){
     var mw=el.offsetWidth||150, mh=el.offsetHeight||150;
@@ -3058,6 +3251,10 @@
       ctxNext.style.display =
         (playing && isOn(id) && window.LofiEngine) ? "flex" : "none";
     } else { ctxToggle.style.display="none"; ctxNext.style.display="none"; }
+    // Turn (side <-> front) only for rotatable floor furniture, placed on floor
+    var pp = S.placedItems[id];
+    ctxTurn.style.display =
+      (ROTATABLE[id] && pp && pp.surf==="floor") ? "flex" : "none";
     place(menu,x,y);
   }
   function showRoomMenu(x,y){ menu.style.display="none"; roomMenu.style.display="block"; place(roomMenu,x,y); }
@@ -3074,6 +3271,17 @@
     if (!act || !menuId || !S.placedItems[menuId]) return hideMenu();
     pushUndo();
     var P=S.placedItems[menuId];
+    if (act==="turn" && ROTATABLE[menuId]){
+      var cur = (P.orient==="front") ? "front" : "side";
+      var nxt = (cur==="front") ? "side" : "front";
+      var es=drawScaleOf(menuId);
+      var ob=spriteBox(menuId,cur), nb=spriteBox(menuId,nxt);
+      var ow=ob[0]*es, oh=ob[1]*es, nw=nb[0]*es, nh=nb[1]*es;
+      var footY=P.y+oh, cx=P.x+ow/2;                 // keep foot + centre
+      P.orient=nxt;
+      P.y=Math.round(footY-nh);
+      P.x=Math.round(clamp(cx-nw/2, 2, VW-2-nw));
+    }
     if (act==="flip")    P.flip=!P.flip;
     if (act==="front")   P.z=nextZ();
     if (act==="back")    P.z=bottomZ();
@@ -3481,6 +3689,9 @@
         p.surf = a.indexOf("wall")!==-1 ? "wall" : (a[0]==="floor" ? "floor" : "shelf");
       }
       if (typeof p.z!=="number") p.z=0;
+      // orientation: legacy saves have none → "side"; only rotatable floor
+      // furniture may be "front", everything else is forced back to side
+      if (p.orient!=="front" || !ROTATABLE[id] || p.surf!=="floor") p.orient="side";
     });
   }
 

@@ -65,9 +65,11 @@
     var len = Math.floor(ctx.sampleRate * seconds);
     var b = ctx.createBuffer(2, len, ctx.sampleRate);
     for (var ch = 0; ch < 2; ch++) {
-      var d = b.getChannelData(ch);
+      var d = b.getChannelData(ch), lp = 0;
       for (var i = 0; i < len; i++) {
-        d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, decay);
+        var n = Math.random() * 2 - 1;
+        lp += (n - lp) * 0.18;                       // one-pole LP → dark, not grainy
+        d[i] = lp * Math.pow(1 - i / len, decay);
       }
     }
     return b;
@@ -79,8 +81,12 @@
     var sat = ctx.createWaveShaper();
     sat.curve = softCurve(); sat.oversample = "2x";
 
+    // lo-fi wants a narrow, dark band — toneLP follows the per-track macro,
+    // toneLP2 is a fixed second-order roll-off so highs are well down
     toneLP = ctx.createBiquadFilter();
-    toneLP.type = "lowpass"; toneLP.frequency.value = 8200; toneLP.Q.value = 0.4;
+    toneLP.type = "lowpass"; toneLP.frequency.value = 4500; toneLP.Q.value = 0.3;
+    var toneLP2 = ctx.createBiquadFilter();
+    toneLP2.type = "lowpass"; toneLP2.frequency.value = 5200; toneLP2.Q.value = 0.3;
 
     mixBus = ctx.createGain(); mixBus.gain.value = 1;
 
@@ -89,22 +95,30 @@
     drumsBus  = ctx.createGain(); drumsBus.gain.value = 0.62;
     texBus    = ctx.createGain(); texBus.gain.value = 0.34;
 
-    reverb = ctx.createConvolver(); reverb.buffer = impulse(2.4, 2.6);
-    revReturn = ctx.createGain(); revReturn.gain.value = 0.34;
+    reverb = ctx.createConvolver(); reverb.buffer = impulse(2.0, 3.0);
+    // dark plate: band-limit the tail so it can't smear fizz over the mix
+    var revLP = ctx.createBiquadFilter();
+    revLP.type = "lowpass"; revLP.frequency.value = 3200; revLP.Q.value = 0.3;
+    var revHP = ctx.createBiquadFilter();
+    revHP.type = "highpass"; revHP.frequency.value = 180; revHP.Q.value = 0.3;
+    revReturn = ctx.createGain(); revReturn.gain.value = 0.26;
 
     // headroom before the saturator so the tanh stays warm, not crushed —
-    // then a gentle limiter catches stray peaks instead of clipping the DAC
+    // gentle glue compression, then a true safety limiter on the very end
     var trim = ctx.createGain(); trim.gain.value = 0.30;
     var comp = ctx.createDynamicsCompressor();
-    comp.threshold.value = -10; comp.knee.value = 6; comp.ratio.value = 12;
-    comp.attack.value = 0.003; comp.release.value = 0.20;
+    comp.threshold.value = -14; comp.knee.value = 12; comp.ratio.value = 3.5;
+    comp.attack.value = 0.015; comp.release.value = 0.25;
+    var limiter = ctx.createDynamicsCompressor();
+    limiter.threshold.value = -1.5; limiter.knee.value = 0; limiter.ratio.value = 20;
+    limiter.attack.value = 0.002; limiter.release.value = 0.12;
 
     musicDuck.connect(mixBus);
     drumsBus.connect(mixBus);
     texBus.connect(mixBus);
-    reverb.connect(revReturn).connect(mixBus);
-    mixBus.connect(trim).connect(sat).connect(toneLP)
-          .connect(comp).connect(master).connect(ctx.destination);
+    reverb.connect(revLP).connect(revHP).connect(revReturn).connect(mixBus);
+    mixBus.connect(trim).connect(sat).connect(toneLP).connect(toneLP2)
+          .connect(comp).connect(master).connect(limiter).connect(ctx.destination);
 
     // shared wow (slow pitch drift) + flutter (fast shallow) → osc.detune
     wowLFO = ctx.createOscillator(); wowLFO.type = "sine"; wowLFO.frequency.value = 0.27;
@@ -310,12 +324,12 @@
              rim: (Math.random() * 99) | 0, hatC: (Math.random() * 99) | 0 },
       // per-track synth flavour
       padOsc: PAD_OSCS[(Math.random() * PAD_OSCS.length) | 0],
-      fm: 0.8 + Math.random() * 1.0,                        // Rhodes FM index
+      fm: 0.5 + Math.random() * 0.45,                       // subtle Rhodes FM (0.5-0.95)
       leadOct: Math.random() < 0.5 ? 0 : 1,
       add9P: 0.18 + Math.random() * 0.30,
       susP:  0.06 + Math.random() * 0.12,
       // per-track timbre macros
-      toneHz: 5200 + Math.random() * 3600,                  // master warmth 5.2-8.8k
+      toneHz: 3000 + Math.random() * 2000,                  // dark lo-fi roll-off 3.0-5.0k
       revAmt: 0.22 + Math.random() * 0.22,                  // reverb depth 0.22-0.44
       padHz:  1250 + Math.random() * 1050,                  // pad colour 1.25-2.3k
       dens:   0.78 + Math.random() * 0.42,                  // busyness 0.78-1.20
@@ -345,13 +359,19 @@
   }
 
   // ---- voices --------------------------------------------------------------
+  // click-free: linear fade-in, exp body, linear release to *true* zero.
+  // Returns the end time so callers stop oscillators after it (no truncation
+  // tick — that was a big part of the harsh digital edge).
   function adsr(param, t, peak, a, d, s, susT, r) {
+    var sus = Math.max(0.0001, peak * s);
+    var end = t + a + d + susT + r;
     param.cancelScheduledValues(t);
     param.setValueAtTime(0.0001, t);
-    param.exponentialRampToValueAtTime(Math.max(0.0002, peak), t + a);
-    param.exponentialRampToValueAtTime(Math.max(0.0002, peak * s), t + a + d);
-    param.setValueAtTime(Math.max(0.0002, peak * s), t + a + d + susT);
-    param.exponentialRampToValueAtTime(0.0001, t + a + d + susT + r);
+    param.linearRampToValueAtTime(Math.max(0.0001, peak), t + a);
+    param.exponentialRampToValueAtTime(sus, t + a + d);
+    param.setValueAtTime(sus, t + a + d + susT);
+    param.linearRampToValueAtTime(0, end);
+    return end;
   }
 
   function sendReverb(node, amt) {
@@ -364,8 +384,8 @@
     var lp = ctx.createBiquadFilter();
     lp.type = "lowpass"; lp.frequency.value = (cfg && cfg.padHz) || 1700; lp.Q.value = 0.3;
     g.connect(lp).connect(musicDuck);
-    sendReverb(g, 0.45);
-    adsr(g.gain, t, 0.10, 0.9, 0.6, 0.7, dur, 1.1);
+    sendReverb(g, 0.30);
+    var e = adsr(g.gain, t, 0.10, 0.9, 0.6, 0.7, dur, 1.1);
     freqs.forEach(function (f, k) {
       var types = (cfg && cfg.padOsc) || ["sawtooth", "triangle"];
       var o1 = ctx.createOscillator(); o1.type = types[0];
@@ -375,50 +395,57 @@
       wowWire(o1); wowWire(o2);
       o1.connect(g); o2.connect(g);
       o1.start(t); o2.start(t);
-      o1.stop(t + dur + 1.4); o2.stop(t + dur + 1.4);
+      o1.stop(e + 0.05); o2.stop(e + 0.05);
     });
   }
 
   function rhodes(f, t, dur) {
     var car = ctx.createOscillator(); car.type = "sine"; car.frequency.value = f;
     var mod = ctx.createOscillator(); mod.type = "sine"; mod.frequency.value = f * 2;
-    var mg = ctx.createGain(); mg.gain.value = f * 1.4 * ((cfg && cfg.fm) || 1);
+    // small, fast-decaying FM index = warm EP "bark", not a metallic clang
+    var fmAmt = f * 0.45 * ((cfg && cfg.fm) || 0.7);
+    var mg = ctx.createGain();
+    mg.gain.setValueAtTime(fmAmt, t);
+    mg.gain.exponentialRampToValueAtTime(Math.max(0.0001, fmAmt * 0.16), t + 0.12);
     mod.connect(mg).connect(car.frequency);
+    var lp = ctx.createBiquadFilter();
+    lp.type = "lowpass"; lp.frequency.value = 2400; lp.Q.value = 0.4;
     var g = ctx.createGain(); g.gain.value = 0.0001;
     var trem = ctx.createOscillator(); trem.type = "sine"; trem.frequency.value = 5.2;
     var td = ctx.createGain(); td.gain.value = 0.05;
     trem.connect(td).connect(g.gain);
     wowWire(car);
-    car.connect(g).connect(musicDuck);
-    sendReverb(g, 0.3);
-    adsr(g.gain, t, 0.22, 0.005, 0.5, 0.35, dur, 0.5);
+    car.connect(lp).connect(g).connect(musicDuck);
+    sendReverb(g, 0.22);
+    var e = adsr(g.gain, t, 0.22, 0.006, 0.5, 0.35, dur, 0.5);
     car.start(t); mod.start(t); trem.start(t);
-    var e = t + dur + 0.7;
-    car.stop(e); mod.stop(e); trem.stop(e);
+    car.stop(e + 0.05); mod.stop(e + 0.05); trem.stop(e + 0.05);
   }
 
   function glock(f, t) {
     var g = ctx.createGain(); g.gain.value = 0.0001;
-    g.connect(musicDuck); sendReverb(g, 0.5);
-    [[1, 0.5], [3.01, 0.18], [5.4, 0.08]].forEach(function (pp) {
+    var lp = ctx.createBiquadFilter();
+    lp.type = "lowpass"; lp.frequency.value = 3000; lp.Q.value = 0.4;
+    lp.connect(g); g.connect(musicDuck); sendReverb(g, 0.30);
+    var e = adsr(g.gain, t, 0.2, 0.002, 0.5, 0.001, 0, 0.4);
+    [[1, 0.5], [3.01, 0.16], [5.4, 0.04]].forEach(function (pp) {
       var o = ctx.createOscillator(); o.type = "sine";
       o.frequency.value = f * pp[0];
       var og = ctx.createGain(); og.gain.value = pp[1];
-      o.connect(og).connect(g); o.start(t); o.stop(t + 1.0);
+      o.connect(og).connect(lp); o.start(t); o.stop(e + 0.05);
     });
-    adsr(g.gain, t, 0.2, 0.002, 0.5, 0.001, 0, 0.4);
   }
 
   function guitar(f, t, dur) {
-    var o = ctx.createOscillator(); o.type = "sawtooth"; o.frequency.value = f;
+    var o = ctx.createOscillator(); o.type = "triangle"; o.frequency.value = f;
     wowWire(o);
     var lp = ctx.createBiquadFilter();
-    lp.type = "lowpass"; lp.frequency.value = 1500; lp.Q.value = 4;
+    lp.type = "lowpass"; lp.frequency.value = 1100; lp.Q.value = 0.8;  // no whistle
     var g = ctx.createGain(); g.gain.value = 0.0001;
     o.connect(lp).connect(g).connect(musicDuck);
-    sendReverb(g, 0.25);
-    adsr(g.gain, t, 0.18, 0.006, 0.18, 0.12, dur * 0.4, 0.35);
-    o.start(t); o.stop(t + dur + 0.6);
+    sendReverb(g, 0.20);
+    var e = adsr(g.gain, t, 0.16, 0.010, 0.18, 0.14, dur * 0.4, 0.35);
+    o.start(t); o.stop(e + 0.05);
   }
 
   function bass(f, t, dur, short) {
@@ -428,10 +455,10 @@
     lp.type = "lowpass"; lp.frequency.value = 320;
     var g = ctx.createGain(); g.gain.value = 0.0001;
     o.connect(lp); o2.connect(lp); lp.connect(g).connect(musicDuck);
-    if (short) adsr(g.gain, t, 0.34, 0.012, 0.12, 0.18, dur, 0.12);  // plucked
-    else       adsr(g.gain, t, 0.32, 0.02,  0.15, 0.70, dur, 0.18);  // sustained
+    var e = short ? adsr(g.gain, t, 0.34, 0.012, 0.12, 0.18, dur, 0.12)  // plucked
+                  : adsr(g.gain, t, 0.32, 0.02,  0.15, 0.70, dur, 0.18); // sustained
     o.start(t); o2.start(t);
-    o.stop(t + dur + 0.3); o2.stop(t + dur + 0.3);
+    o.stop(e + 0.05); o2.stop(e + 0.05);
   }
 
   function lead(kind, f, t, dur) {
@@ -469,7 +496,8 @@
     s.connect(g); s.start(t, Math.random() * Math.max(0, b.duration - slice), slice);
     g.gain.setValueAtTime(0.0001, t);
     g.gain.exponentialRampToValueAtTime(0.16, t + 0.02);
-    g.gain.exponentialRampToValueAtTime(0.0001, t + slice + 0.15);
+    g.gain.exponentialRampToValueAtTime(0.0006, t + slice + 0.12);
+    g.gain.linearRampToValueAtTime(0, t + slice + 0.16);   // true zero, no tick
   }
 
   // sidechain pump on every kick
@@ -477,8 +505,8 @@
     var p = musicDuck.gain;
     p.cancelScheduledValues(t);
     p.setValueAtTime(1, t);
-    p.linearRampToValueAtTime(0.42, t + 0.012);
-    p.setTargetAtTime(1, t + 0.02, 0.085);
+    p.linearRampToValueAtTime(0.55, t + 0.018);
+    p.setTargetAtTime(1, t + 0.026, 0.09);
   }
 
   function kick(t, buf) {
@@ -513,9 +541,9 @@
   }
   // motif note: index into chord tones (+ an upper extension) of the bar
   function motifNote(chord, m) {
-    var pool = chord.concat([chord[0] + 12, chord[1] + 12, chord[2] + 12]);
-    var idx = ((m.d % pool.length) + pool.length) % pool.length;
-    return mtof(pool[idx] + 12 * (m.o + cfg.leadOct));
+    var idx = ((m.d % chord.length) + chord.length) % chord.length;
+    var oct = Math.min(1, (m.o || 0) + (cfg.leadOct || 0));   // ≤ +1 octave, never shrill
+    return mtof(chord[idx] + 12 * oct);
   }
   // who carries the harmony this track (pad bed vs keys vs guitar arp vs dream)
   function renderHarmony(sec, s, t, chord) {

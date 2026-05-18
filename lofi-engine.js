@@ -197,6 +197,32 @@
   ];
   var LEADS = ["rhodes", "guitar", "glock", "vocal"];
 
+  // ---- arrangement identity (what actually makes tracks differ) -----------
+  // Each groove is a 16-step rhythmic fingerprint + feel. scheduleStep reads
+  // these instead of one hardcoded pattern.
+  var GROOVES = {
+    boombap:  { kick:[0,10],   snare:{t:"snare",at:[4,12]}, ghostP:0.06,
+                hatEvery:2, hatP:0.40, openAt:14, openP:0.5,
+                shaker:{mod:4,eq:2,p:0.40}, percP:0.03, swing:[0.55,0.62] },
+    halftime: { kick:[0,11],   snare:{t:"snare",at:[8]},    ghostP:0.04,
+                hatEvery:4, hatP:0.30, openAt:14, openP:0.3,
+                shaker:null,                percP:0.02, swing:[0.50,0.56] },
+    swing2:   { kick:[0,8],    snare:{t:"rim",  at:[4,12]}, ghostP:0.05,
+                hatEvery:2, hatP:0.50, openAt:7,  openP:0.6,
+                shaker:{mod:2,eq:1,p:0.55}, percP:0.03, swing:[0.58,0.66] },
+    lazy:     { kick:[0],      snare:{t:"rim",  at:[12]},   ghostP:0.02,
+                hatEvery:4, hatP:0.18, openAt:14, openP:0.2,
+                shaker:null,                percP:0.015,swing:[0.55,0.62] },
+    headnod:  { kick:[0,7,10], snare:{t:"rim",  at:[4,12]}, ghostP:0.05,
+                hatEvery:2, hatP:0.45, openAt:14, openP:0.4,
+                shaker:{mod:4,eq:0,p:0.55}, percP:0.04, swing:[0.55,0.62] }
+  };
+  var GROOVE_NAMES = ["boombap", "halftime", "swing2", "lazy", "headnod"];
+  var PALETTES = ["padkeys", "keys", "guitar", "dream"];
+  var BASSES   = ["sustained", "pluck", "root5", "octave"];
+  var PAD_OSCS = [["sawtooth","triangle"], ["triangle","triangle"],
+                  ["triangle","square"]];
+
   // diatonic 7th (sometimes add-9 / sus) voicing around a center octave
   function chordMidi(scale, rootMidi, degree, color) {
     var sc = scale, n = sc.length;
@@ -214,13 +240,30 @@
   var cfg = null;
   // remember the last track so the next one is audibly different, not a reroll
   // that happens to land on the same key/scale/lead/progression.
-  var prevTrack = { scale: "", progIdx: -1, lead: "", root: -1 };
+  var prevTrack = { scale: "", progIdx: -1, lead: "", root: -1,
+                    groove: "", palette: "", bass: "", motif: "" };
   function pickDiff(arr, prev) {
     if (arr.length < 2) return arr[0];
     var v, i = 0;
     do { v = arr[(Math.random() * arr.length) | 0]; i++; }
     while (v === prev && i < 8);
     return v;
+  }
+  // a tiny 2-4 note melodic cell (scale/chord-relative) so each track has a
+  // recognisable hook instead of one random note
+  function makeMotif() {
+    var n = 2 + ((Math.random() * 3) | 0);            // 2-4 notes
+    var slots = [6, 8, 11, 14], degs = [0, 1, 2, 3, 4, 5, -1], m = [];
+    for (var i = 0; i < n; i++)
+      m.push({ s: slots[(Math.random() * slots.length) | 0],
+               d: degs[(Math.random() * degs.length) | 0],
+               o: Math.random() < 0.25 ? 1 : 0 });
+    m.sort(function (a, b) { return a.s - b.s; });
+    return m;
+  }
+  function motifSig(m) { return m.map(function (x) { return x.d + ":" + x.s; }).join(","); }
+  function kitBuf(fam, idx) {
+    var a = LIB[fam]; return (a && a.length) ? a[idx % a.length] : null;
   }
   function newConfig() {
     var bpm = 68 + Math.floor(Math.random() * 25);          // 68-92
@@ -232,20 +275,46 @@
     do { progIdx = (Math.random() * PROGS.length) | 0; }
     while (progIdx === prevTrack.progIdx && PROGS.length > 1);
     var lead = pickDiff(LEADS, prevTrack.lead);
+    var grooveName = pickDiff(GROOVE_NAMES, prevTrack.groove);
+    var palette = pickDiff(PALETTES, prevTrack.palette);
+    var bassStyle = pickDiff(BASSES, prevTrack.bass);
+    var groove = GROOVES[grooveName];
     var barDur = (60 / bpm) * 4;
-    var barsPerChord = Math.random() < 0.5 ? 1 : 2;
+    var r = Math.random();
+    var barsPerChord = r < 0.5 ? 1 : (r < 0.85 ? 2 : 4);
     var trackSec = 120 + Math.random() * 180;               // 2-5 min
     var totalBars = Math.max(32, Math.round(trackSec / barDur));
-    prevTrack = { scale: scaleName, progIdx: progIdx, lead: lead, root: root };
+    var transBars = 4;
+    var introBars = [0, 0, 4, 8][(Math.random() * 4) | 0];
+    var breakLen = 4, breakAt = null;
+    if (Math.random() < 0.55) {
+      var mid = Math.round(totalBars * (0.42 + Math.random() * 0.16));
+      if (mid > introBars + 6 && mid + breakLen < totalBars - transBars - 2)
+        breakAt = mid;
+    }
+    var motif = makeMotif();
+    if (motifSig(motif) === prevTrack.motif) motif = makeMotif();
+    prevTrack = { scale: scaleName, progIdx: progIdx, lead: lead, root: root,
+                  groove: grooveName, palette: palette, bass: bassStyle,
+                  motif: motifSig(motif) };
     return {
       bpm: bpm, scale: SCALES[scaleName], scaleName: scaleName,
       root: root, prog: PROGS[progIdx],
       barDur: barDur, barsPerChord: barsPerChord,
-      totalBars: totalBars, transBars: 4,
-      lead: lead,
-      kickPat: (Math.random() * 3) | 0,
-      swing: 0.54 + Math.random() * 0.09,                   // 0.54-0.63
-      // per-track timbre macros — these are what make each track its own vibe
+      totalBars: totalBars, transBars: transBars,
+      introBars: introBars, breakAt: breakAt, breakLen: breakLen,
+      lead: lead, grooveName: grooveName, groove: groove,
+      palette: palette, bassStyle: bassStyle, motif: motif,
+      swing: groove.swing[0] + Math.random() * (groove.swing[1] - groove.swing[0]),
+      kit: { kick: (Math.random() * 99) | 0, snare: (Math.random() * 99) | 0,
+             rim: (Math.random() * 99) | 0, hatC: (Math.random() * 99) | 0 },
+      // per-track synth flavour
+      padOsc: PAD_OSCS[(Math.random() * PAD_OSCS.length) | 0],
+      fm: 0.8 + Math.random() * 1.0,                        // Rhodes FM index
+      leadOct: Math.random() < 0.5 ? 0 : 1,
+      add9P: 0.18 + Math.random() * 0.30,
+      susP:  0.06 + Math.random() * 0.12,
+      // per-track timbre macros
       toneHz: 5200 + Math.random() * 3600,                  // master warmth 5.2-8.8k
       revAmt: 0.22 + Math.random() * 0.22,                  // reverb depth 0.22-0.44
       padHz:  1250 + Math.random() * 1050,                  // pad colour 1.25-2.3k
@@ -268,7 +337,8 @@
   function trackInfo() {
     if (!cfg) return null;
     return { lead: cfg.lead, bpm: cfg.bpm, scale: cfg.scaleName,
-             label: cfg.lead + " · " + cfg.bpm + " bpm" };
+             groove: cfg.grooveName, palette: cfg.palette,
+             label: cfg.lead + " · " + cfg.bpm + " bpm · " + cfg.grooveName };
   }
   function fireTrack() {
     if (onTrackCb) { try { onTrackCb(trackInfo()); } catch (e) {} }
@@ -297,8 +367,9 @@
     sendReverb(g, 0.45);
     adsr(g.gain, t, 0.10, 0.9, 0.6, 0.7, dur, 1.1);
     freqs.forEach(function (f, k) {
-      var o1 = ctx.createOscillator(); o1.type = "sawtooth";
-      var o2 = ctx.createOscillator(); o2.type = "triangle";
+      var types = (cfg && cfg.padOsc) || ["sawtooth", "triangle"];
+      var o1 = ctx.createOscillator(); o1.type = types[0];
+      var o2 = ctx.createOscillator(); o2.type = types[1];
       o1.frequency.value = f; o2.frequency.value = f;
       o1.detune.value = -6 + k; o2.detune.value = 7 - k;
       wowWire(o1); wowWire(o2);
@@ -311,7 +382,7 @@
   function rhodes(f, t, dur) {
     var car = ctx.createOscillator(); car.type = "sine"; car.frequency.value = f;
     var mod = ctx.createOscillator(); mod.type = "sine"; mod.frequency.value = f * 2;
-    var mg = ctx.createGain(); mg.gain.value = f * 1.4;
+    var mg = ctx.createGain(); mg.gain.value = f * 1.4 * ((cfg && cfg.fm) || 1);
     mod.connect(mg).connect(car.frequency);
     var g = ctx.createGain(); g.gain.value = 0.0001;
     var trem = ctx.createOscillator(); trem.type = "sine"; trem.frequency.value = 5.2;
@@ -350,14 +421,15 @@
     o.start(t); o.stop(t + dur + 0.6);
   }
 
-  function bass(f, t, dur) {
+  function bass(f, t, dur, short) {
     var o = ctx.createOscillator(); o.type = "triangle"; o.frequency.value = f;
     var o2 = ctx.createOscillator(); o2.type = "sine"; o2.frequency.value = f;
     var lp = ctx.createBiquadFilter();
     lp.type = "lowpass"; lp.frequency.value = 320;
     var g = ctx.createGain(); g.gain.value = 0.0001;
     o.connect(lp); o2.connect(lp); lp.connect(g).connect(musicDuck);
-    adsr(g.gain, t, 0.32, 0.02, 0.15, 0.7, dur, 0.18);
+    if (short) adsr(g.gain, t, 0.34, 0.012, 0.12, 0.18, dur, 0.12);  // plucked
+    else       adsr(g.gain, t, 0.32, 0.02,  0.15, 0.70, dur, 0.18);  // sustained
     o.start(t); o2.start(t);
     o.stop(t + dur + 0.3); o2.stop(t + dur + 0.3);
   }
@@ -409,8 +481,8 @@
     p.setTargetAtTime(1, t + 0.02, 0.085);
   }
 
-  function kick(t) {
-    if (LIB.kick.length) { smp(pick(LIB.kick), t, 0.7); duck(t); return; }
+  function kick(t, buf) {
+    if (LIB.kick.length) { smp(buf || pick(LIB.kick), t, 0.7); duck(t); return; }
     // synth fallback only if no samples (kept minimal; samples are the path)
     var o = ctx.createOscillator(); o.frequency.setValueAtTime(150, t);
     o.frequency.exponentialRampToValueAtTime(45, t + 0.12);
@@ -426,62 +498,125 @@
 
   function chordForBar(barIndex) {
     var slot = Math.floor((barIndex / cfg.barsPerChord)) % cfg.prog.length;
-    var color = Math.random() < 0.3 ? "add9" : (Math.random() < 0.12 ? "sus" : "");
+    var color = Math.random() < cfg.add9P ? "add9"
+              : (Math.random() < cfg.susP ? "sus" : "");
     return chordMidi(cfg.scale, cfg.root + 12, cfg.prog[slot], color);
+  }
+
+  // intro builds → main → optional soft break → out (into the crossfade seam)
+  function sectionForBar(b) {
+    if (b < cfg.introBars) return "intro";
+    if (b >= cfg.totalBars - cfg.transBars) return "out";
+    if (cfg.breakAt != null && b >= cfg.breakAt && b < cfg.breakAt + cfg.breakLen)
+      return "break";
+    return "main";
+  }
+  // motif note: index into chord tones (+ an upper extension) of the bar
+  function motifNote(chord, m) {
+    var pool = chord.concat([chord[0] + 12, chord[1] + 12, chord[2] + 12]);
+    var idx = ((m.d % pool.length) + pool.length) % pool.length;
+    return mtof(pool[idx] + 12 * (m.o + cfg.leadOct));
+  }
+  // who carries the harmony this track (pad bed vs keys vs guitar arp vs dream)
+  function renderHarmony(sec, s, t, chord) {
+    if (cfg.palette === "guitar") {
+      if (s === 0 || s === 4 || s === 8 || s === 12) {
+        var gi = (s / 4) | 0;
+        guitar(mtof(chord[gi % chord.length]), t + 0.01, cfg.barDur * 0.32);
+      }
+      return;
+    }
+    if (cfg.palette === "keys") {
+      if (s === 0 || s === 8)
+        chord.forEach(function (n, k) {
+          rhodes(mtof(n), t + 0.005 * k, s === 0 ? cfg.barDur * 0.5 : cfg.barDur * 0.42);
+        });
+      return;
+    }
+    // padkeys / dream → sustained pad bed
+    if (s === 0)
+      pad(chord.map(mtof), t, cfg.barDur * cfg.barsPerChord * 0.98);
+    if (cfg.palette === "padkeys" && sec !== "break") {
+      if (s === 0 && Math.random() < 0.6) rhodes(mtof(chord[1]), t + 0.02, cfg.barDur * 0.5);
+      if (s === 8 && Math.random() < 0.5)
+        rhodes(mtof(pick([chord[2], chord[3]])), t, cfg.barDur * 0.45);
+    }
+  }
+  function renderBass(s, t, chord) {
+    var rootF = mtof(chord[0] - 24);
+    var st = cfg.bassStyle;
+    if (st === "sustained") {
+      if (s === 0) bass(rootF, t, cfg.barDur * 0.92);
+      if (s === 8) bass(mtof(chord[0] - 24 + (Math.random() < 0.5 ? 7 : 0)), t, cfg.barDur * 0.45);
+    } else if (st === "pluck") {
+      if (s === 0 || s === 4 || s === 8 || s === 12) bass(rootF, t, cfg.barDur * 0.20, true);
+    } else if (st === "root5") {
+      if (s === 0) bass(rootF, t, cfg.barDur * 0.55);
+      if (s === 8) bass(mtof(chord[0] - 24 + 7), t, cfg.barDur * 0.45);
+    } else { // octave
+      if (s === 0) bass(rootF, t, cfg.barDur * 0.5);
+      if (s === 8) bass(mtof(chord[0] - 12), t, cfg.barDur * 0.45);
+    }
   }
 
   function scheduleStep(s, t) {
     var bar = cfg.bar;
-    var inTrans = bar >= cfg.totalBars - cfg.transBars;
-    var dens = (inTrans ? 0.7 : 1) * (cfg.dens || 1);    // per-track busyness; thins gently at the seam
+    var sec = sectionForBar(bar);
+    var inTrans = (sec === "out");
+    var dens = (inTrans ? 0.7 : 1) * (cfg.dens || 1);    // per-track busyness; thins at the seam
     var chord = chordForBar(bar);
+    var g = cfg.groove;
+    var drumsOn = (sec === "main" || sec === "out");
+    var rhythmOn = drumsOn;                               // bass rides with the kit
 
-    // --- drums (boom-bap, swung, humanized, slightly behind) ---
-    var beat = Math.floor(s / 4);
-    var kp = cfg.kickPat;
-    var kickHit = (s === 0) ||
-      (kp === 0 && s === 10) ||
-      (kp === 1 && (s === 6 || s === 11)) ||
-      (kp === 2 && s === 7);
-    if (kickHit) kick(t);
+    // --- drums: this track's groove + locked kit ---
+    if (drumsOn) {
+      if (g.kick.indexOf(s) !== -1) kick(t, kitBuf("kick", cfg.kit.kick));
 
-    if (s === 4 || s === 12) {                            // backbeat snare
-      var sn = LIB.snare.length ? pick(LIB.snare) : null;
-      if (sn) smp(sn, t + 0.012, 0.8);
-    } else if (LIB.snare.length && Math.random() < 0.06 * dens) {
-      smp(pick(LIB.snare), t + 0.012, 0.18);              // ghost
+      if (g.snare.at.indexOf(s) !== -1) {                 // backbeat
+        if (g.snare.t === "rim") {
+          var rb = kitBuf("rim", cfg.kit.rim) || kitBuf("snare", cfg.kit.snare);
+          if (rb) smp(rb, t + 0.012, 0.60);
+        } else {
+          var sb = kitBuf("snare", cfg.kit.snare);
+          if (sb) smp(sb, t + 0.012, 0.80);
+        }
+      } else if (LIB.snare.length && Math.random() < g.ghostP * dens) {
+        smp(pick(LIB.snare), t + 0.012, 0.16);            // ghost
+      }
+
+      if (s % g.hatEvery === 0 || Math.random() < g.hatP * dens) {
+        var openTime = (s === g.openAt && Math.random() < g.openP);
+        var hb = openTime && LIB.hatO.length ? pick(LIB.hatO)
+               : kitBuf("hatC", cfg.kit.hatC);
+        if (hb) smp(hb, t + 0.006 + Math.random() * 0.012,
+                    (0.20 + Math.random() * 0.15) * (openTime ? 1.1 : 1));
+      }
+      if (g.shaker && LIB.shaker.length && s % g.shaker.mod === g.shaker.eq
+          && Math.random() < g.shaker.p * dens)
+        smp(pick(LIB.shaker), t + 0.01, 0.16);
+      if (LIB.perc.length && Math.random() < g.percP * dens)
+        smp(pick(LIB.perc), t + 0.01, 0.18, 1, drumsBus,
+            (Math.random() * 2 - 1) * 0.5);
     }
 
-    if (s % 2 === 0 || Math.random() < 0.4 * dens) {      // loose hats
-      var openTime = (s === 14 && Math.random() < 0.5);
-      var hb = openTime && LIB.hatO.length ? pick(LIB.hatO)
-             : LIB.hatC.length ? pick(LIB.hatC) : null;
-      if (hb) smp(hb, t + 0.006 + Math.random() * 0.012,
-                  (0.22 + Math.random() * 0.16) * (openTime ? 1.1 : 1));
-    }
-    if (LIB.shaker.length && s % 4 === 2 && Math.random() < 0.5 * dens)
-      smp(pick(LIB.shaker), t + 0.01, 0.16);
-    if (LIB.perc.length && Math.random() < 0.03 * dens)
-      smp(pick(LIB.perc), t + 0.01, 0.18, 1, drumsBus,
-          (Math.random() * 2 - 1) * 0.5);
+    // --- harmony (always, per palette) + bass (with the kit) ---
+    renderHarmony(sec, s, t, chord);
+    if (rhythmOn) renderBass(s, t, chord);
 
-    // --- harmony / bass / lead on musical positions ---
-    if (s === 0) {
-      pad(chord.map(mtof), t, cfg.barDur * cfg.barsPerChord * 0.98);
-      bass(mtof(chord[0] - 24), t, cfg.barDur * 0.92);
-      if (!inTrans && Math.random() < 0.6)
-        rhodes(mtof(chord[1]), t + 0.02, cfg.barDur * 0.5);
+    // --- melodic motif: main only, sparse (dream palette plays it more) ---
+    if (sec === "main") {
+      var moreP = (cfg.palette === "dream") ? 1.8 : 1;
+      cfg.motif.forEach(function (m) {
+        if (m.s === s && Math.random() < 0.42 * moreP)
+          lead(cfg.lead, motifNote(chord, m), t + 0.02, cfg.barDur * 0.4);
+      });
     }
-    if (s === 8) {
-      bass(mtof(chord[0] - 24 + (Math.random() < 0.5 ? 7 : 0)), t, cfg.barDur * 0.45);
-      if (!inTrans && Math.random() < 0.5)
-        rhodes(mtof(pick([chord[2], chord[3]])), t, cfg.barDur * 0.45);
-    }
-    // sparse melodic top — never busy
-    if (!inTrans && (s === 6 || s === 11) && Math.random() < 0.32) {
-      var top = mtof(pick(chord) + 12);
-      lead(cfg.lead, top, t + 0.02, cfg.barDur * 0.4);
-    }
+    // intro/break aren't empty: a soft keys/guitar note keeps them breathing
+    if ((sec === "intro" || sec === "break") &&
+        (cfg.palette === "padkeys" || cfg.palette === "dream") &&
+        (s === 0 || s === 8) && Math.random() < 0.6)
+      rhodes(mtof(pick(chord) + 12 * cfg.leadOct), t + 0.02, cfg.barDur * 0.45);
 
     // --- end of bar bookkeeping ---
     if (s === 15) {

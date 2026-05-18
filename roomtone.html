@@ -2224,7 +2224,11 @@
     var noon  = 1 - Math.abs(slant);                    // 1 at midday
     var reachY = WALL_BOTTOM + 92 - 46*noon;            // shorter beam midday
     var foot   = -slant*120;                            // beam sweeps across floor
-    var litA   = (0.07 + 0.16*noon) * Math.max(0, (tod.k+26)/52)
+    // daylight through the glass must fade out as the SKY goes dark — the sky
+    // reads "night" at tod.k < -8, so the shaft has to be gone by then (it used
+    // to linger to k=-26, which is why a dark sky still had a daytime beam).
+    var dayLum = clamp((tod.k+6)/26, 0, 1);            // ~0.77 midday → 0 by dusk
+    var litA   = (0.07 + 0.16*noon) * dayLum
                  * (S.curtains==="closed" ? ((S.settings&&S.settings.blackout)?0.03:0.12)
                     : S.curtains==="sheer" ? 0.55 : 1);
     function litRGB(){ var c=cssToHex(tod.lit).replace("#","");
@@ -3532,6 +3536,21 @@
   if (S.settings && S.settings.liveWx) refreshWeather();   // uses cache; no prompt unless stale
   if (S.settings && S.settings.accurateDaylight) ensureDaylight();
   setInterval(function(){ refreshWeather(); }, WX_TTL);     // keep it current while open
+  // Keep the scene honest about the real local time. rAF is paused/throttled
+  // while the tab is hidden, so a tab left open (or reopened) can paint a
+  // stale time-of-day for a moment. Snap render + ambient + weather to "now"
+  // whenever the page becomes visible/focused, and on a slow safety interval.
+  function refreshNow(){
+    _lastFrame = 0;                                          // force a fresh paint
+    try { drawRoom(performance.now()); } catch(e){}
+    ambientSync();
+    refreshWeather();
+  }
+  document.addEventListener("visibilitychange", function(){
+    if (!document.hidden) refreshNow();
+  });
+  window.addEventListener("focus", refreshNow);
+  setInterval(function(){ if (!document.hidden) refreshNow(); }, 60000);
   requestAnimationFrame(frame);
   // note: no beforeunload save — every mutation persists immediately,
   // and lastVisit is recomputed from storage on the next load.

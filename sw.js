@@ -1,7 +1,7 @@
 /* Phantom Bandwidth — offline service worker.
    HTML is network-first (so updates show immediately, offline still works);
    everything else is cache-first with a runtime cache. Bump V to refresh. */
-var V = "phantombw-v6";
+var V = "phantombw-v7";
 var CORE = ["/", "/index.html", "/roomtone.html", "/manifest.webmanifest", "/icon.svg", "/lofi-engine.js"];
 
 self.addEventListener("install", function (e) {
